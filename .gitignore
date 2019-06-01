@@ -1,0 +1,13 @@
+.DS_Store
+.dart_tool/
+
+.packages
+.pub/
+.idea/
+.vscode/
+
+build/
+test/
+
+CHANGELOG.md
+LICENSE
