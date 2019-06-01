@@ -10,7 +10,7 @@ class QrScanPlugin: MethodCallHandler {
   companion object {
     @JvmStatic
     fun registerWith(registrar: Registrar) {
-      val channel = MethodChannel(registrar.messenger(), "qr_scan")
+      val channel = MethodChannel(registrar.messenger(), "io.cloudacy.qr_scan")
       channel.setMethodCallHandler(QrScanPlugin())
     }
   }
