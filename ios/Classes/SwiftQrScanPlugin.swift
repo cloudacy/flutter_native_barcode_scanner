@@ -74,7 +74,7 @@ public class SwiftQrScanPlugin: NSObject, FlutterPlugin {
       flutterResult(FlutterError(code: "NoCameraFound", message: "No camera device found!", details: nil))
       return
     }
-    cameraDevice.activeVideoMinFrameDuration = CMTime(seconds: 1.0, preferredTimescale: 1)
+//    cameraDevice.activeVideoMinFrameDuration = CMTime(seconds: 1.0, preferredTimescale: 1)
     
     // Try to set the found camera device as an input.
     guard let cameraDeviceInput = try? AVCaptureDeviceInput(device: cameraDevice), captureSession.canAddInput(cameraDeviceInput) else {
@@ -89,7 +89,7 @@ public class SwiftQrScanPlugin: NSObject, FlutterPlugin {
     // https://medium.com/@abhimuralidharan/how-to-create-a-simple-qrcode-barcode-scanner-app-in-ios-swift-fd9970a70859
     let metadataOutput = AVCaptureMetadataOutput()
     metadataOutput.setMetadataObjectsDelegate(self, queue: DispatchQueue.main)
-    metadataOutput.metadataObjectTypes = [.qr]
+//    metadataOutput.metadataObjectTypes = [.qr]
     
     captureSession.commitConfiguration()
     
