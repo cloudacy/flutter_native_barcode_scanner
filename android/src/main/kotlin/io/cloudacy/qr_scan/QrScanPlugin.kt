@@ -1,14 +1,16 @@
 package io.cloudacy.qr_scan
 
-import java.lang.Exception
+import kotlin.Exception
 
 import android.content.Context
+import android.graphics.SurfaceTexture
 import android.os.Build
 
 import android.hardware.camera2.CameraManager
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraDevice
 import android.hardware.camera2.CameraMetadata
+import android.view.Surface
 
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
@@ -17,6 +19,51 @@ import io.flutter.plugin.common.MethodChannel.Result
 import io.flutter.plugin.common.PluginRegistry.Registrar
 
 import io.flutter.view.FlutterView
+import io.flutter.view.TextureRegistry
+
+class QrScanCameraStateCallback : CameraDevice.StateCallback() {
+  private val surfaceTextureEntry: TextureRegistry.SurfaceTextureEntry
+
+  constructor(surfaceTextureEntry: TextureRegistry.SurfaceTextureEntry) {
+    this.surfaceTextureEntry = surfaceTextureEntry
+  }
+
+  override fun onOpened(cameraDevice: CameraDevice) {
+    try {
+      val surfaceTexture = surfaceTextureEntry.surfaceTexture()
+      // TODO: fix preview Size. See computeBestPreviewAndRecordingSize in camera plugin
+      surfaceTexture.setDefaultBufferSize(100, 100)
+      cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW)
+
+      val surfaces = mutableListOf<Surface>()
+
+
+    } catch (e: Exception) {
+      System.err.println(e.message)
+      cameraDevice.close()
+    }
+  }
+
+  override fun onClosed(cameraDevice: CameraDevice) {
+    System.out.println("Camera closed")
+  }
+
+  override fun onDisconnected(cameraDevice: CameraDevice) {
+    System.out.println("Camera disconnected")
+  }
+
+  override fun onError(cameraDevice: CameraDevice, errorCode: Int) {
+    cameraDevice.close()
+
+    when (errorCode) {
+      ERROR_CAMERA_IN_USE -> System.err.println("Camera in use")
+      ERROR_MAX_CAMERAS_IN_USE -> System.err.println("Maximum cameras in use")
+      ERROR_CAMERA_DISABLED -> System.err.println("Camera disabled")
+      ERROR_CAMERA_DEVICE -> System.err.println("Camera device error")
+      ERROR_CAMERA_SERVICE -> System.err.println("Camera service error")
+    }
+  }
+}
 
 class QrScanPlugin: MethodCallHandler {
   private val view: FlutterView
@@ -71,15 +118,12 @@ class QrScanPlugin: MethodCallHandler {
         }
       }
       "init" -> {
-        cameraManager.openCamera(call.argument("cameraId") as String, CameraDevice.StateCallback() {
-          
-        }, null)
+        val flutterTextureEntry = view.createSurfaceTexture()
 
+        cameraManager!!.openCamera(call.argument("cameraId"), QrScanCameraStateCallback(flutterTextureEntry), null)
 
-        val texture = view.createSurfaceTexture()
 
         System.out.println("test")
-        result.success("Texture ${texture.id()}")
       }
       else -> {
         result.notImplemented()
