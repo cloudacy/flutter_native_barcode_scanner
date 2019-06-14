@@ -2,29 +2,29 @@ import 'package:flutter/material.dart';
 
 import 'package:qr_scan/qr_scan.dart';
 
-List<CameraDescription> cameras;
+// List<CameraDescription> cameras;
 
 Future<Null> main() async {
+  /*
   // Fetch the available cameras before initializing the app.
   try {
     cameras = await availableCameras();
   } on QRReaderException catch (e) {
     logError(e.code, e.description);
   }
+  */
   runApp(new MyApp());
 }
 
-
-void logError(String code, String message) =>
-    print('Error: $code\nError Message: $message');
+void logError(String code, String message) => print('Error: $code\nError Message: $message');
 
 class MyApp extends StatefulWidget {
   @override
   _MyAppState createState() => _MyAppState();
 }
 
-class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
-  QRReaderController controller;
+  /*
+  // QRReaderController controller;
   AnimationController animationController;
   Animation<double> verticalPosition;
 
@@ -42,8 +42,8 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
     });
     animationController.forward();
 
-    verticalPosition = Tween<double>(begin: 0.0, end: 300.0).animate(
-        CurvedAnimation(parent: animationController, curve: Curves.linear))
+    verticalPosition = Tween<double>(begin: 0.0, end: 300.0)
+        .animate(CurvedAnimation(parent: animationController, curve: Curves.linear))
       ..addStatusListener((state) {
         if (state == AnimationStatus.completed) {
           animationController.reverse();
@@ -54,6 +54,7 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
 
     // pick the first available camera
     onNewCameraSelected(cameras[0]);
+
   }
 
   @override
@@ -63,8 +64,7 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
         appBar: AppBar(
           title: const Text('Plugin example app'),
         ),
-        body: Stack(
-          children: <Widget>[
+          body: Stack(children: <Widget>[
             new Container(
               child: new Padding(
                 padding: const EdgeInsets.all(0.0),
@@ -80,8 +80,7 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
                     height: 300.0,
                     width: 300.0,
                     child: Container(
-                      decoration: BoxDecoration(
-                          border: Border.all(color: Colors.red, width: 2.0)),
+                      decoration: BoxDecoration(border: Border.all(color: Colors.red, width: 2.0)),
                     ),
                   ),
                   Positioned(
@@ -95,9 +94,7 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
                 ],
               ),
             ),
-          ]
-        )
-      ),
+          ])),
     );
   }
 
@@ -132,8 +129,8 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
     if (controller != null) {
       await controller.dispose();
     }
-    controller = new QRReaderController(cameraDescription, ResolutionPreset.low,
-        [CodeFormat.qr, CodeFormat.pdf417], onCodeRead);
+    controller =
+        new QRReaderController(cameraDescription, ResolutionPreset.low, [CodeFormat.qr, CodeFormat.pdf417], onCodeRead);
 
     // If the controller is updated then update the UI.
     controller.addListener(() {
@@ -155,4 +152,5 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
       controller.startScanning();
     }
   }
+  */
 }

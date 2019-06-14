@@ -1,10 +1,10 @@
-import 'dart:async';
+// import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
-final MethodChannel _channel = const MethodChannel('io.cloudacy.qr_scan')..invokeMethod('init');
+// final MethodChannel _channel = const MethodChannel('io.cloudacy.qr_scan')..invokeMethod('init');
 
 class QrScan extends StatefulWidget {
   @override
@@ -19,15 +19,19 @@ class _QrScanState extends State<QrScan> {
   @override
   void initState() {
     super.initState();
+
+    // First get available cameras.
+    // Then invoke the initialize method with the id of the chosen camera.
+
     prepareCamera();
   }
 
   void prepareCamera() async {
-    final dynamic data = await _channel.invokeMapMethod('init');
-    print(data);
-    setState(() {
-      textureId = data['textureId'];
-    });
+    final dynamic data = await _channel.invokeMethod('init', <String, dynamic>{'cameraId': 'test'});
+    print(data.toString());
+    //setState(() {
+    //  textureId = data['textureId'];
+    //});
   }
 
   @override
@@ -52,7 +56,7 @@ class _QrScanState extends State<QrScan> {
     );
   }
 }
-
+/*
 enum CameraLensDirection { front, back, external }
 enum CodeFormat { codabar, code39, code93, code128, ean8, ean13, itf, upca, upce, aztec, datamatrix, pdf417, qr }
 enum ResolutionPreset { low, medium, high }
@@ -328,3 +332,4 @@ class CameraDescription {
     return '$runtimeType($name, $lensDirection)';
   }
 }
+*/
