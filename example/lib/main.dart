@@ -23,6 +23,18 @@ class MyApp extends StatefulWidget {
   _MyAppState createState() => _MyAppState();
 }
 
+class _MyAppState extends State<MyApp> /* with SingleTickerProviderStateMixin*/ {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text('QR Scanner'),
+        ),
+        body: QrScan(),
+      ),
+    );
+  }
   /*
   // QRReaderController controller;
   AnimationController animationController;
@@ -44,13 +56,13 @@ class MyApp extends StatefulWidget {
 
     verticalPosition = Tween<double>(begin: 0.0, end: 300.0)
         .animate(CurvedAnimation(parent: animationController, curve: Curves.linear))
-      ..addStatusListener((state) {
-        if (state == AnimationStatus.completed) {
-          animationController.reverse();
-        } else if (state == AnimationStatus.dismissed) {
-          animationController.forward();
-        }
-      });
+          ..addStatusListener((state) {
+            if (state == AnimationStatus.completed) {
+              animationController.reverse();
+            } else if (state == AnimationStatus.dismissed) {
+              animationController.forward();
+            }
+          });
 
     // pick the first available camera
     onNewCameraSelected(cameras[0]);
@@ -61,9 +73,9 @@ class MyApp extends StatefulWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Plugin example app'),
-        ),
+          appBar: AppBar(
+            title: const Text('Plugin example app'),
+          ),
           body: Stack(children: <Widget>[
             new Container(
               child: new Padding(
