@@ -2,17 +2,16 @@ import 'package:flutter/material.dart';
 
 import 'package:qr_scan/qr_scan.dart';
 
-// List<CameraDescription> cameras;
+List<CameraDescription> cameras;
 
 Future<Null> main() async {
-  /*
   // Fetch the available cameras before initializing the app.
   try {
     cameras = await availableCameras();
   } on QRReaderException catch (e) {
     logError(e.code, e.description);
   }
-  */
+
   runApp(new MyApp());
 }
 
@@ -24,26 +23,28 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> /* with SingleTickerProviderStateMixin*/ {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          title: Text('QR Scanner'),
-        ),
-        body: QrScan(),
-      ),
-    );
-  }
+  // @override
+  // Widget build(BuildContext context) {
+  //   return MaterialApp(
+  //     home: Scaffold(
+  //       appBar: AppBar(
+  //         title: Text('QR Scanner'),
+  //       ),
+  //       body: QrScan(),
+  //     ),
+  //   );
+  // }
+  
+  QRReaderController controller;
   /*
-  // QRReaderController controller;
   AnimationController animationController;
   Animation<double> verticalPosition;
-
+  */
   @override
   void initState() {
     super.initState();
 
+    /*
     animationController = new AnimationController(
       vsync: this,
       duration: new Duration(seconds: 3),
@@ -63,7 +64,7 @@ class _MyAppState extends State<MyApp> /* with SingleTickerProviderStateMixin*/ 
               animationController.forward();
             }
           });
-
+    */
     // pick the first available camera
     onNewCameraSelected(cameras[0]);
 
@@ -85,27 +86,27 @@ class _MyAppState extends State<MyApp> /* with SingleTickerProviderStateMixin*/ 
                 ),
               ),
             ),
-            Center(
-              child: Stack(
-                children: <Widget>[
-                  SizedBox(
-                    height: 300.0,
-                    width: 300.0,
-                    child: Container(
-                      decoration: BoxDecoration(border: Border.all(color: Colors.red, width: 2.0)),
-                    ),
-                  ),
-                  Positioned(
-                    top: verticalPosition.value,
-                    child: Container(
-                      width: 300.0,
-                      height: 2.0,
-                      color: Colors.red,
-                    ),
-                  )
-                ],
-              ),
-            ),
+            // Center(
+            //   child: Stack(
+            //     children: <Widget>[
+            //       SizedBox(
+            //         height: 300.0,
+            //         width: 300.0,
+            //         child: Container(
+            //           decoration: BoxDecoration(border: Border.all(color: Colors.red, width: 2.0)),
+            //         ),
+            //       ),
+            //       Positioned(
+            //         top: verticalPosition.value,
+            //         child: Container(
+            //           width: 300.0,
+            //           height: 2.0,
+            //           color: Colors.red,
+            //         ),
+            //       )
+            //     ],
+            //   ),
+            // ),
           ])),
     );
   }
@@ -161,8 +162,7 @@ class _MyAppState extends State<MyApp> /* with SingleTickerProviderStateMixin*/ 
 
     if (mounted) {
       setState(() {});
-      controller.startScanning();
+      // controller.startScanning();
     }
   }
-  */
 }

@@ -1,10 +1,12 @@
 // import 'dart:async';
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
-// final MethodChannel _channel = const MethodChannel('io.cloudacy.qr_scan')..invokeMethod('init');
+final MethodChannel _channel = const MethodChannel('io.cloudacy.qr_scan');
 
 class QrScan extends StatefulWidget {
   @override
@@ -12,7 +14,7 @@ class QrScan extends StatefulWidget {
 }
 
 class _QrScanState extends State<QrScan> {
-  static const MethodChannel _channel = const MethodChannel('io.cloudacy.qr_scan');
+  // static const MethodChannel _channel = const MethodChannel('io.cloudacy.qr_scan');
   bool running = false;
   int textureId;
 
@@ -23,11 +25,11 @@ class _QrScanState extends State<QrScan> {
     // First get available cameras.
     // Then invoke the initialize method with the id of the chosen camera.
 
-    prepareCamera();
+    // prepareCamera();
   }
 
   void prepareCamera() async {
-    final dynamic data = await _channel.invokeMethod('init', <String, dynamic>{'cameraId': 'test'});
+    final dynamic data = await _channel.invokeMethod('initialize', <String, dynamic>{'cameraName': 'test'});
     print(data.toString());
     //setState(() {
     //  textureId = data['textureId'];
@@ -45,7 +47,7 @@ class _QrScanState extends State<QrScan> {
         RaisedButton(
           child: Text('start'),
           onPressed: () async {
-            await _channel.invokeMethod('start');
+            await _channel.invokeMethod('startImageStream');
             print('started');
             setState(() {
               running = true;
@@ -56,7 +58,7 @@ class _QrScanState extends State<QrScan> {
     );
   }
 }
-/*
+
 enum CameraLensDirection { front, back, external }
 enum CodeFormat { codabar, code39, code93, code128, ean8, ean13, itf, upca, upce, aztec, datamatrix, pdf417, qr }
 enum ResolutionPreset { low, medium, high }
@@ -132,6 +134,7 @@ Future<List<CameraDescription>> availableCameras() async {
   }
 }
 
+
 /// This is thrown when the plugin reports an error.
 class QRReaderException implements Exception {
   String code;
@@ -151,6 +154,7 @@ class QRReaderPreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print(controller._textureId);
     return controller.value.isInitialized ? new Texture(textureId: controller._textureId) : new Container();
   }
 }
@@ -332,4 +336,3 @@ class CameraDescription {
     return '$runtimeType($name, $lensDirection)';
   }
 }
-*/
