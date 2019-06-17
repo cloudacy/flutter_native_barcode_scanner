@@ -1,3 +1,7 @@
+// resources:
+// - https://developer.android.com/reference/android/hardware/camera2/package-summary.html
+// - https://www.youtube.com/watch?v=u38wOv2a_dA -> kotlin examples of the camera2 api
+
 package io.cloudacy.qr_scan
 
 import kotlin.Exception
