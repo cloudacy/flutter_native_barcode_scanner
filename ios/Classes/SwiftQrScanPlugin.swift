@@ -17,7 +17,7 @@ public class QrCam: NSObject, FlutterTexture, AVCaptureVideoDataOutputSampleBuff
     
     
     //  Converted to Swift 4 by Swiftify v4.2.37326 - https://objectivec2swift.com/
-    init(cameraName: String?, resolutionPreset: String?, methodChannel channel: FlutterMethodChannel?, codeFormats: [Any]?) throws {
+    init(cameraName: String?, resolutionPreset: String?, dispatchQueue: DispatchQueue) throws {
         super.init()
         captureSession = AVCaptureSession()
         
@@ -25,6 +25,10 @@ public class QrCam: NSObject, FlutterTexture, AVCaptureVideoDataOutputSampleBuff
         
         let dimensions: CMVideoDimensions = CMVideoFormatDescriptionGetDimensions(captureDevice!.activeFormat.formatDescription)
         previewSize = CGSize(width: CGFloat(dimensions.width), height: CGFloat(dimensions.height));
+    }
+    
+    public func start() {
+        captureSession?.startRunning()
     }
     
     public func metadataOutput(_ output: AVCaptureMetadataOutput, didOutput metadataObjects: [AVMetadataObject], from connection: AVCaptureConnection) {
@@ -45,13 +49,13 @@ public class QrCam: NSObject, FlutterTexture, AVCaptureVideoDataOutputSampleBuff
 
     
     public func copyPixelBuffer() -> Unmanaged<CVPixelBuffer>? {
-        _ = latestPixelBuffer
+        guard let pixelBuffer = latestPixelBuffer else { return nil }
         //        while !OSAtomicCompareAndSwapPtrBarrier(pixelBuffer, nil, &latestPixelBuffer) {
         //            pixelBuffer = latestPixelBuffer
         //        }
         
         // see this: https://stackoverflow.com/questions/51543606/how-to-copy-a-cvpixelbuffer-in-swift?rq=1
-        return Unmanaged<CVPixelBuffer>.passRetained(latestPixelBuffer!)
+        return Unmanaged.passRetained(pixelBuffer)
     }
     
     public func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
@@ -84,6 +88,7 @@ public class QrCam: NSObject, FlutterTexture, AVCaptureVideoDataOutputSampleBuff
     }
     
     public func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
+        print("Capture Output!")
         if output == captureVideoOutput {
             let newBuffer = CMSampleBufferGetImageBuffer(sampleBuffer)
             latestPixelBuffer = newBuffer
@@ -102,6 +107,8 @@ public class QrCam: NSObject, FlutterTexture, AVCaptureVideoDataOutputSampleBuff
 }
 
 public class SwiftQrScanPlugin: NSObject, FlutterPlugin {
+    private var dispatchQueue: DispatchQueue?
+
     private(set) var registry: FlutterTextureRegistry
     private(set) var messenger: FlutterBinaryMessenger
     private(set) var methodChannel: FlutterMethodChannel
@@ -127,18 +134,28 @@ public class SwiftQrScanPlugin: NSObject, FlutterPlugin {
     }
     
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-        flutterResult = result
         
+        if dispatchQueue == nil {
+            dispatchQueue = DispatchQueue(label: "io.cloudacy.qr_scan.dispathQueue")
+        }
+        
+        // Invoke the plugin on another dispatch queue to avoid blocking the UI.
+        dispatchQueue?.async(execute: {
+            self.handleMethodCallAsync(call, result: result)
+        })
+    }
+    
+    func handleMethodCallAsync(_ call: FlutterMethodCall, result: FlutterResult) {
         switch call.method {
-        case "init":
-            reset()
-            result(nil)
+        case "availableCameras":
+            result(findAvailableCameras())
             break
         case "initialize":
             result(initializeQrScanner(call: call))
             break
-        case "availableCameras":
-            result(findAvailableCameras())
+        case "init":
+            reset()
+            result(nil)
             break
         case "startScanning":
             camera!.startScanning()
@@ -155,98 +172,55 @@ public class SwiftQrScanPlugin: NSObject, FlutterPlugin {
         }
     }
     
-    public func initializeQrScanner(call: FlutterMethodCall) -> Any {
-        var cameraName = (call.arguments as AnyObject)["cameraName"] as! String
-        var resolutionPreset = (call.arguments as AnyObject)["resolutionPreset"] as! String
-        var formats = (call.arguments as AnyObject)["codeFormats"] as! [Any]
+    public func initializeQrScanner(call: FlutterMethodCall) -> [String: Any] {
+        let cameraName = (call.arguments as AnyObject)["cameraName"] as! String
+        let resolutionPreset = (call.arguments as AnyObject)["resolutionPreset"] as! String
+        _ = (call.arguments as AnyObject)["codeFormats"] as! [Any]
         var error: Error?
-        guard let cam = try? QrCam(cameraName: cameraName, resolutionPreset: resolutionPreset, methodChannel: methodChannel, codeFormats: formats) else {
-            print(error)
-            return error
+        var cam: QrCam? = nil
+        
+        do {
+            if let dispatchQueue = dispatchQueue {
+                cam = try QrCam(cameraName: cameraName, resolutionPreset: resolutionPreset, dispatchQueue: dispatchQueue)
+            }
+        } catch {
+        }
+        
+        if error != nil {
+            return ["Error": getFlutterError(error: error)]
         }
         
         if (camera != nil) {
             camera?.close()
         }
         
-        var textureId: Int64 = registry.register(cam)
+        let textureId = registry.register(cam!)
         camera = cam
         
-        cam.onFrameAvailable = {
+        cam?.onFrameAvailable = {
             self.registry.textureFrameAvailable(textureId)
         }
         
-        var eventName = String(format:"io.cloudacy.qr_scan/cameraEvents%ld", textureId)
-        NSLog(String(format: "textureId: %ld", textureId))
-        NSLog(eventName)
-        print(textureId)
-        print(eventName)
-        var eventChannel = FlutterEventChannel(name: eventName, binaryMessenger: messenger)
+        let eventChannel = FlutterEventChannel(name: String(format: "io.cloudacy.qr_scan/cameraEvents%lld", textureId ), binaryMessenger: messenger)
+        
         eventChannel.setStreamHandler(cam)
-        cam.eventChannel = eventChannel
+        cam?.eventChannel = eventChannel
+
+        return [
+            "textureId": NSNumber(value: textureId),
+            "previewWidth": cam?.previewSize.width ?? 0.0,
+            "previewHeight": cam?.previewSize.height ?? 0.0,
+            "captureWidth": cam?.captureSize.width ?? 0.0,
+            "captureHeight": cam?.captureSize.height ?? 0.0
+        ]
         
-        let result = [String: Any]()
-        return ["textureId": textureId, "previewWidth": cam.previewSize.width, "previewHeight": cam.previewSize.height, "captureWidth": cam.captureSize.width, "captureHeight": cam.captureSize.height, "eventName": eventName]
-        
-        //    guard let flutterResult = flutterResult else {
-        //      print("ERROR: No flutterResult available!")
-        //      return
-        //    }
-        //
-        //    let texture = SwiftQrScanPluginTexture()
-        //    let _textureId = textureRegistry?.register(texture)
-        //
-        //    guard let textureId = _textureId else {
-        //      flutterResult(FlutterError(code: "NoTextureId", message: "Unable to fetch the textureId!", details: nil))
-        //      return
-        //    }
-        //
-        //    // Camera test
-        //    self.captureSession = AVCaptureSession()
-        //    // Begin/Commit configuration allows atomic configuration changes
-        //    guard let captureSession = self.captureSession else {
-        //      flutterResult(FlutterError(code: "NoCaptureSession", message: "Unable to create a capture session!", details: nil))
-        //      return
-        //    }
-        //    captureSession.beginConfiguration()
-        //
-        //    // Try to find a camera device.
-        //    guard let cameraDevice = findCameraDevice() else {
-        //      flutterResult(FlutterError(code: "NoCameraFound", message: "No camera device found!", details: nil))
-        //      return
-        //    }
-        ////    cameraDevice.activeVideoMinFrameDuration = CMTime(seconds: 1.0, preferredTimescale: 1)
-        //
-        //    // Try to set the found camera device as an input.
-        //    guard let cameraDeviceInput = try? AVCaptureDeviceInput(device: cameraDevice), captureSession.canAddInput(cameraDeviceInput) else {
-        //      flutterResult(FlutterError(code: "NoCameraInput", message: "Unable to use the camera device as an input!", details: nil))
-        //      return
-        //    }
-        //
-        //    // Add the input to the captureSession.
-        //    captureSession.addInput(cameraDeviceInput)
-        //
-        //    // Create an output.
-        //    // https://medium.com/@abhimuralidharan/how-to-create-a-simple-qrcode-barcode-scanner-app-in-ios-swift-fd9970a70859
-        //    let metadataOutput = AVCaptureMetadataOutput()
-        //    metadataOutput.setMetadataObjectsDelegate(self, queue: DispatchQueue.main)
-        ////    metadataOutput.metadataObjectTypes = [.qr]
-        //
-        //    captureSession.commitConfiguration()
-        //
-        //    texture.onFrameAvailable = {() -> Void in
-        //      self.textureRegistry?.textureFrameAvailable(textureId)
-        //    }
-        //
-        //    flutterResult([
-        //      "textureId": textureId
-        //    ])
+        cam?.start()
     }
     
     public func findAvailableCameras() -> [[String: String]] {
         if #available(iOS 10.0, *) {
-            var discoverySession = AVCaptureDevice.DiscoverySession(deviceTypes: [.builtInWideAngleCamera], mediaType: .video, position: .unspecified)
-            var devices = discoverySession.devices
+            let discoverySession = AVCaptureDevice.DiscoverySession(deviceTypes: [.builtInWideAngleCamera], mediaType: .video, position: .unspecified)
+            let devices = discoverySession.devices
             var reply: [[String : String]] = []
             
             for device in devices {
@@ -304,4 +278,8 @@ extension SwiftQrScanPlugin: AVCaptureMetadataOutputObjectsDelegate {
             }
         }
     }
+}
+
+private func getFlutterError(error: Error?) -> FlutterError? {
+    return FlutterError(code: "Error", message: (error as NSError?)?.domain, details: error?.localizedDescription)
 }
