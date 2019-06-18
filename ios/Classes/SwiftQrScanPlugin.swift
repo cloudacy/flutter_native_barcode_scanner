@@ -55,7 +55,7 @@ public class QrCam: NSObject, FlutterTexture, AVCaptureVideoDataOutputSampleBuff
         //        }
         
         // see this: https://stackoverflow.com/questions/51543606/how-to-copy-a-cvpixelbuffer-in-swift?rq=1
-        return Unmanaged.passRetained(pixelBuffer)
+        return Unmanaged.passRetained(pixelBuffer).autorelease()
     }
     
     public func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
