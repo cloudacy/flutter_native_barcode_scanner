@@ -49,6 +49,7 @@ public class QrCam: NSObject, FlutterTexture, AVCaptureVideoDataOutputSampleBuff
 
     
     public func copyPixelBuffer() -> Unmanaged<CVPixelBuffer>? {
+        print("Copy pixel buffer")
         guard let pixelBuffer = latestPixelBuffer else { return nil }
         //        while !OSAtomicCompareAndSwapPtrBarrier(pixelBuffer, nil, &latestPixelBuffer) {
         //            pixelBuffer = latestPixelBuffer
@@ -151,7 +152,7 @@ public class SwiftQrScanPlugin: NSObject, FlutterPlugin {
             result(findAvailableCameras())
             break
         case "initialize":
-            result(initializeQrScanner(call: call))
+            initializeQrScanner(call: call, result: result)
             break
         case "init":
             reset()
@@ -172,7 +173,7 @@ public class SwiftQrScanPlugin: NSObject, FlutterPlugin {
         }
     }
     
-    public func initializeQrScanner(call: FlutterMethodCall) -> [String: Any] {
+    public func initializeQrScanner(call: FlutterMethodCall, result: FlutterResult) -> Void {
         let cameraName = (call.arguments as AnyObject)["cameraName"] as! String
         let resolutionPreset = (call.arguments as AnyObject)["resolutionPreset"] as! String
         _ = (call.arguments as AnyObject)["codeFormats"] as! [Any]
@@ -187,7 +188,7 @@ public class SwiftQrScanPlugin: NSObject, FlutterPlugin {
         }
         
         if error != nil {
-            return ["Error": getFlutterError(error: error)]
+            result(["Error": getFlutterError(error: error)])
         }
         
         if (camera != nil) {
@@ -205,14 +206,21 @@ public class SwiftQrScanPlugin: NSObject, FlutterPlugin {
         
         eventChannel.setStreamHandler(cam)
         cam?.eventChannel = eventChannel
+        
+        let previewWidth = cam?.previewSize.width ?? 0.0
+        let previewHeight = cam?.previewSize.height ?? 0.0
+        let captureWidth = cam?.captureSize.width ?? 0.0
+        let captureHeight = cam?.captureSize.height ?? 0.0
 
-        return [
-            "textureId": NSNumber(value: textureId),
-            "previewWidth": cam?.previewSize.width ?? 0.0,
-            "previewHeight": cam?.previewSize.height ?? 0.0,
-            "captureWidth": cam?.captureSize.width ?? 0.0,
-            "captureHeight": cam?.captureSize.height ?? 0.0
-        ]
+        let resultObject = [
+            "textureId": textureId,
+            "previewWidth": previewWidth,
+            "previewHeight": previewHeight,
+            "captureWidth": captureWidth,
+            "captureHeight": captureHeight
+            ] as [String : Any]
+        
+        result(resultObject)
         
         cam?.start()
     }

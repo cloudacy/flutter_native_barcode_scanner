@@ -117,7 +117,6 @@ class _MyAppState extends State<MyApp> /* with SingleTickerProviderStateMixin*/ 
       return const Text(
         'No camera selected',
         style: const TextStyle(
-          color: Colors.white,
           fontSize: 24.0,
           fontWeight: FontWeight.w900,
         ),

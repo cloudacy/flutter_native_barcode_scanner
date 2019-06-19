@@ -242,6 +242,9 @@ class QRReaderController extends ValueNotifier<QRReaderValue> {
         },
       );
       _textureId = reply['textureId'];
+      print(_textureId);
+      print(reply['previewWidth']);
+      print(reply['previewHeight']);
       value = value.copyWith(
         isInitialized: true,
         previewSize: new Size(
