@@ -11,7 +11,7 @@ protocol FrameExtractorDelegate: class {
     func captured(image: UIImage)
 }
 
-public class QrCam: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, FlutterTexture, FlutterStreamHandler {
+public class QrCam: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, AVCaptureMetadataOutputObjectsDelegate, FlutterTexture, FlutterStreamHandler {
     private let position = AVCaptureDevice.Position.back
     private let quality = AVCaptureSession.Preset.medium
     
@@ -26,13 +26,23 @@ public class QrCam: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, Flut
     
     private(set) var previewSize = CGSize(width: 1920, height: 1080)
     var onFrameAvailable: (() -> Void)?
+    var eventChannel: FlutterEventChannel?
+    var methodChannel: FlutterMethodChannel?
     
-    override public init() {
+    private var feedbackGenerator: Any?
+    
+    public init(methodChannel: FlutterMethodChannel) {
         super.init()
         checkPermission()
 
         self.configureSession()
         self.captureSession.startRunning()
+        
+        self.methodChannel = methodChannel
+        
+        if #available(iOS 10.0, *) {
+            feedbackGenerator = UINotificationFeedbackGenerator()
+        }
     }
     
     private func checkPermission() {
@@ -68,13 +78,25 @@ public class QrCam: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, Flut
         guard let captureDeviceInput = try? AVCaptureDeviceInput(device: captureDevice) else { return }
         guard captureSession.canAddInput(captureDeviceInput) else { return }
         captureSession.addInput(captureDeviceInput)
+        
         let videoOutput = AVCaptureVideoDataOutput()
+        let metadataOutput = AVCaptureMetadataOutput()
+        
         videoOutput.videoSettings = [
             kCVPixelBufferPixelFormatTypeKey as String: NSNumber(value: videoFormat)
         ]
         videoOutput.setSampleBufferDelegate(self, queue: DispatchQueue(label: "sample buffer"))
         guard captureSession.canAddOutput(videoOutput) else { return }
         captureSession.addOutput(videoOutput)
+        captureSession.addOutput(metadataOutput)
+        
+        
+        // configure metadataOutput
+        
+        // support qr codes
+        metadataOutput.setMetadataObjectsDelegate(self, queue: DispatchQueue(label: "sample buffer"))
+        metadataOutput.metadataObjectTypes = [.qr, .ean8, .ean13, .code39, .code93, .code128, .pdf417, .upce, .dataMatrix]
+        
         guard let connection = videoOutput.connection(with: AVFoundation.AVMediaType.video) else { return }
         guard connection.isVideoOrientationSupported else { return }
         guard connection.isVideoMirroringSupported else { return }
@@ -87,6 +109,30 @@ public class QrCam: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, Flut
         
         if onFrameAvailable != nil {
             onFrameAvailable?()
+        }
+    }
+    
+    public func metadataOutput(_ output: AVCaptureMetadataOutput, didOutput metadataObjects: [AVMetadataObject], from connection: AVCaptureConnection) {
+        captureSession.stopRunning()
+        
+        if let metadataObject = metadataObjects.first {
+            guard let readableObject = metadataObject as? AVMetadataMachineReadableCodeObject else { return }
+            guard let stringValue = readableObject.stringValue else { return }
+            
+            // we can only do this in main thread
+            DispatchQueue.main.async {
+                // haptic feedback (vibrate)
+                if #available(iOS 10.0, *) {
+                    let generator = self.feedbackGenerator as! UINotificationFeedbackGenerator
+                    generator.prepare()
+                    generator.notificationOccurred(.success)
+                } else {
+                    AudioServicesPlaySystemSound(SystemSoundID(kSystemSoundID_Vibrate))
+                }
+            }
+
+            print("qr code found: " + stringValue)
+            methodChannel?.invokeMethod("code", arguments: stringValue)
         }
     }
     
@@ -179,22 +225,23 @@ public class SwiftQrScanPlugin: NSObject, FlutterPlugin {
 //        let enableAudio = (call.arguments as AnyObject)["enableAudio"] as AnyObject
         
         
-        let extractor = QrCam()
+        let cam = QrCam(methodChannel: methodChannel)
         
-        let textureId = registry.register(extractor)
+        let textureId = registry.register(cam)
         
-        extractor.onFrameAvailable = {
+        cam.onFrameAvailable = {
             self.registry.textureFrameAvailable(textureId)
         }
 
         let eventChannel = FlutterEventChannel(name: String(format: "io.cloudacy.qr_scan/cameraEvents%lld", textureId ), binaryMessenger: messenger)
 
-        eventChannel.setStreamHandler(extractor)
+        eventChannel.setStreamHandler(cam)
+        cam.eventChannel = eventChannel
         
         let resultObject = [
             "textureId": textureId,
-            "previewWidth": extractor.previewSize.width,
-            "previewHeight": extractor.previewSize.height
+            "previewWidth": cam.previewSize.width,
+            "previewHeight": cam.previewSize.height
             ] as [String : Any]
         
         result(resultObject)

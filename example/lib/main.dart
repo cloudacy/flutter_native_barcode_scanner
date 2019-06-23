@@ -36,6 +36,7 @@ class _MyAppState extends State<MyApp> /* with SingleTickerProviderStateMixin*/ 
   // }
   
   QRReaderController controller;
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
   /*
   AnimationController animationController;
   Animation<double> verticalPosition;
@@ -74,6 +75,7 @@ class _MyAppState extends State<MyApp> /* with SingleTickerProviderStateMixin*/ 
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
+          key: _scaffoldKey,
           appBar: AppBar(
             title: const Text('Plugin example app'),
           ),
@@ -131,10 +133,10 @@ class _MyAppState extends State<MyApp> /* with SingleTickerProviderStateMixin*/ 
 
   void onCodeRead(dynamic value) {
     print(value.toString());
-    // showInSnackBar(value.toString());
+    _scaffoldKey.currentState.showSnackBar(SnackBar(content: Text(value.toString())));
     // ... do something
     // wait 5 seconds then start scanning again.
-    new Future.delayed(const Duration(seconds: 5), controller.startScanning);
+    // new Future.delayed(const Duration(seconds: 5), controller.startScanning);
   }
 
   void onNewCameraSelected(CameraDescription cameraDescription) async {

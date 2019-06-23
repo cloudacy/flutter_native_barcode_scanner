@@ -308,12 +308,14 @@ class QRReaderController extends ValueNotifier<QRReaderValue> {
   }
 
   Future<dynamic> _handleMethod(MethodCall call) async {
+    print("got event " + call.method);
     switch (call.method) {
-      case "updateCode":
-        if (value.isScanning) {
+      case "code":
+        // if (value.isScanning) {
           onCodeRead(call.arguments);
+          print("CODE HERE!");
           value = value.copyWith(isScanning: false);
-        }
+        // }
     }
   }
 }
