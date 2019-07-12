@@ -264,29 +264,8 @@ class QRReaderController extends ValueNotifier<QRReaderValue> {
     } on PlatformException catch (e) {
       throw new QRReaderException(e.code, e.message);
     }
-    _eventSubscription =
-        new EventChannel('io.cloudacy.qr_scan/cameraEvents$_textureId').receiveBroadcastStream().listen(_listener);
     _creatingCompleter.complete(null);
     return _creatingCompleter.future;
-  }
-
-  /// Listen to events from the native plugins.
-  ///
-  /// A "cameraClosing" event is sent when the camera is closed automatically by the system (for example when the app go to background). The plugin will try to reopen the camera automatically but any ongoing recording will end.
-  void _listener(dynamic event) {
-    final Map<dynamic, dynamic> map = event;
-    if (_isDisposed) {
-      return;
-    }
-
-    switch (map['eventType']) {
-      case 'error':
-        value = value.copyWith(errorDescription: event['errorDescription']);
-        break;
-      case 'cameraClosing':
-        value = value.copyWith(isScanning: false);
-        break;
-    }
   }
 
   /// Start a QR scan.
@@ -324,7 +303,11 @@ class QRReaderController extends ValueNotifier<QRReaderValue> {
         onCodeRead(call.arguments);
         print("CODE HERE!");
         value = value.copyWith(isScanning: false);
+        break;
       // }
+      case 'cameraClosed':
+        value = value.copyWith(isScanning: false);
+        break;
     }
   }
 }

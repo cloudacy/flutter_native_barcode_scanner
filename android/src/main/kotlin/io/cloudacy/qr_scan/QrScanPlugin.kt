@@ -19,7 +19,6 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
-import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.PluginRegistry.Registrar
 import io.flutter.plugin.common.PluginRegistry.RequestPermissionsResultListener
 
@@ -32,8 +31,6 @@ class QrScanPlugin : MethodCallHandler {
   private val cameraManager: CameraManager
 
   private val channel: MethodChannel
-
-  private var eventSink: EventChannel.EventSink ?= null
 
   var cameraPermissionCallback: Runnable ?= null
 
@@ -95,26 +92,8 @@ class QrScanPlugin : MethodCallHandler {
     //}
   }
 
-  // Register the camera event channel. It is used to stream the camera texture to flutter.
-  private fun registerCameraEventChannel(textureId: Long) {
-    EventChannel(registrar.messenger(), "io.cloudacy.qr_scan/cameraEvents$textureId").setStreamHandler(
-      object : EventChannel.StreamHandler {
-        override fun onListen(arguments: Any?, newEventSink: EventChannel.EventSink?) {
-          eventSink = newEventSink
-        }
-
-        override fun onCancel(o: Any?) {
-          eventSink = null
-        }
-      }
-    )
-  }
-
   private fun openCamera(cameraId: String, result: Result) {
     val textureEntry = view.createSurfaceTexture()
-
-    // Register the event channel.
-    registerCameraEventChannel(textureEntry.id())
 
     cameraManager.openCamera(cameraId, object : CameraDevice.StateCallback() {
       override fun onOpened(cameraDevice: CameraDevice) {
@@ -133,12 +112,6 @@ class QrScanPlugin : MethodCallHandler {
           cameraDevice.createCaptureSession(surfaces, object : CameraCaptureSession.StateCallback() {
             override fun onConfigured(cameraCaptureSession: CameraCaptureSession) {
               try {
-                // Check if the camera is still active
-                //if (cameraDevice == null) {
-                //  result.error("QrScanClosed", "The camera was already closed again.", null)
-                //  return
-                //}
-
                 captureRequestBuilder.set(CaptureRequest.CONTROL_MODE, CaptureRequest.CONTROL_MODE_AUTO)
                 cameraCaptureSession.setRepeatingRequest(captureRequestBuilder.build(), null, null)
 
@@ -163,10 +136,7 @@ class QrScanPlugin : MethodCallHandler {
       }
 
       override fun onClosed(camera: CameraDevice) {
-        //channel.invokeMethod("close", null)
-        eventSink?.success(mapOf(
-          "status" to "closed"
-        ))
+        channel.invokeMethod("cameraClosed", null)
 
         super.onClosed(camera)
       }

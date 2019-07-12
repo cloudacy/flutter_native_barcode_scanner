@@ -26,7 +26,6 @@ public class QrCam: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, AVCa
 
     private(set) var previewSize = CGSize(width: 1920, height: 1080)
     var onFrameAvailable: (() -> Void)?
-    var eventChannel: FlutterEventChannel?
     var methodChannel: FlutterMethodChannel?
 
     private var feedbackGenerator: Any?
@@ -143,16 +142,6 @@ public class QrCam: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, AVCa
 
         return Unmanaged.passRetained(self.pixelBuffer!)
     }
-
-    public func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
-        print("listen")
-        return nil
-    }
-
-    public func onCancel(withArguments arguments: Any?) -> FlutterError? {
-        print("cancel")
-        return nil
-    }
 }
 
 public class SwiftQrScanPlugin: NSObject, FlutterPlugin {
@@ -232,11 +221,6 @@ public class SwiftQrScanPlugin: NSObject, FlutterPlugin {
         cam.onFrameAvailable = {
             self.registry.textureFrameAvailable(textureId)
         }
-
-        let eventChannel = FlutterEventChannel(name: String(format: "io.cloudacy.qr_scan/cameraEvents%lld", textureId ), binaryMessenger: messenger)
-
-        eventChannel.setStreamHandler(cam)
-        cam.eventChannel = eventChannel
 
         let resultObject = [
             "textureId": textureId,
