@@ -34,7 +34,7 @@ class _MyAppState extends State<MyApp> /* with SingleTickerProviderStateMixin*/ 
   //     ),
   //   );
   // }
-  
+
   QRReaderController controller;
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   /*
@@ -68,7 +68,6 @@ class _MyAppState extends State<MyApp> /* with SingleTickerProviderStateMixin*/ 
     */
     // pick the first available camera
     onNewCameraSelected(cameras[0]);
-
   }
 
   @override
@@ -155,6 +154,7 @@ class _MyAppState extends State<MyApp> /* with SingleTickerProviderStateMixin*/ 
     });
 
     try {
+      print('initializing ...');
       await controller.initialize();
     } on QRReaderException catch (e) {
       logError(e.code, e.description);

@@ -123,9 +123,11 @@ CameraLensDirection _parseCameraLensDirection(String string) {
 Future<List<CameraDescription>> availableCameras() async {
   try {
     final List<dynamic> cameras = await _channel.invokeMethod('availableCameras');
+    print('cameras:');
+    print(cameras);
     return cameras.map((dynamic camera) {
       return new CameraDescription(
-        name: camera['name'],
+        id: camera['id'],
         lensDirection: _parseCameraLensDirection(camera['lensFacing']),
       );
     }).toList();
@@ -133,7 +135,6 @@ Future<List<CameraDescription>> availableCameras() async {
     throw new QRReaderException(e.code, e.message);
   }
 }
-
 
 /// This is thrown when the plugin reports an error.
 class QRReaderException implements Exception {
@@ -233,14 +234,22 @@ class QRReaderController extends ValueNotifier<QRReaderValue> {
     try {
       _channel.setMethodCallHandler(_handleMethod);
       _creatingCompleter = new Completer<Null>();
+      print('invoke initialize method.');
+      print(<String, dynamic>{
+        'cameraId': description.id,
+        'resolutionPreset': serializeResolutionPreset(resolutionPreset),
+        'codeFormats': serializeCodeFormatsList(codeFormats),
+      });
       final Map<dynamic, dynamic> reply = await _channel.invokeMethod(
         'initialize',
         <String, dynamic>{
-          'cameraName': description.name,
+          'cameraId': description.id,
           'resolutionPreset': serializeResolutionPreset(resolutionPreset),
           'codeFormats': serializeCodeFormatsList(codeFormats),
         },
       );
+      print('initialize reply');
+      print(reply);
       _textureId = reply['textureId'];
       print(_textureId);
       print(reply['previewWidth']);
@@ -312,32 +321,32 @@ class QRReaderController extends ValueNotifier<QRReaderValue> {
     switch (call.method) {
       case "code":
         // if (value.isScanning) {
-          onCodeRead(call.arguments);
-          print("CODE HERE!");
-          value = value.copyWith(isScanning: false);
-        // }
+        onCodeRead(call.arguments);
+        print("CODE HERE!");
+        value = value.copyWith(isScanning: false);
+      // }
     }
   }
 }
 
 class CameraDescription {
-  final String name;
+  final String id;
   final CameraLensDirection lensDirection;
 
-  CameraDescription({this.name, this.lensDirection});
+  CameraDescription({this.id, this.lensDirection});
 
   @override
   bool operator ==(Object o) {
-    return o is CameraDescription && o.name == name && o.lensDirection == lensDirection;
+    return o is CameraDescription && o.id == id && o.lensDirection == lensDirection;
   }
 
   @override
   int get hashCode {
-    return hashValues(name, lensDirection);
+    return hashValues(id, lensDirection);
   }
 
   @override
   String toString() {
-    return '$runtimeType($name, $lensDirection)';
+    return '$runtimeType($id, $lensDirection)';
   }
 }
