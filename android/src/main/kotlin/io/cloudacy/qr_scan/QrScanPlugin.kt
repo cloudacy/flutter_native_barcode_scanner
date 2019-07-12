@@ -144,7 +144,7 @@ class QrScanPlugin : MethodCallHandler {
       override fun onDisconnected(cameraDevice: CameraDevice) {
         cameraDevice.close()
 
-        result.error("QrScanDisconnected", "The camera disconnected.", null)
+        channel.invokeMethod("cameraClosed", null)
       }
 
       override fun onError(cameraDevice: CameraDevice, errorCode: Int) {
