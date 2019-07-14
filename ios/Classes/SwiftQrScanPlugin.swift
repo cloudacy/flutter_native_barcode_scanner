@@ -11,7 +11,8 @@ protocol FrameExtractorDelegate: class {
     func captured(image: UIImage)
 }
 
-public class QrCam: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, AVCaptureMetadataOutputObjectsDelegate, FlutterTexture, FlutterStreamHandler {
+public class QrCam: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, AVCaptureMetadataOutputObjectsDelegate, FlutterTexture {
+    
     private let position = AVCaptureDevice.Position.back
     private let quality = AVCaptureSession.Preset.medium
 

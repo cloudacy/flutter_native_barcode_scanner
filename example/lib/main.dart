@@ -67,7 +67,11 @@ class _MyAppState extends State<MyApp> /* with SingleTickerProviderStateMixin*/ 
           });
     */
     // pick the first available camera
-    onNewCameraSelected(cameras[0]);
+    if (cameras.isNotEmpty) {
+      onNewCameraSelected(cameras[0]);
+    } else {
+      print('No cameras available.');
+    }
   }
 
   @override
