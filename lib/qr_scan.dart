@@ -218,7 +218,6 @@ class QRReaderController extends ValueNotifier<QRReaderValue> {
 
   int _textureId;
   bool _isDisposed = false;
-  StreamSubscription<dynamic> _eventSubscription;
   Completer<Null> _creatingCompleter;
 
   QRReaderController(this.description, this.resolutionPreset, this.codeFormats, this.onCodeRead)

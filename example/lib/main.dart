@@ -140,7 +140,7 @@ class _MyAppState extends State<MyApp> /* with SingleTickerProviderStateMixin*/ 
 
   void onNewCameraSelected(CameraDescription cameraDescription) async {
     if (controller != null) {
-      await controller.dispose();
+      controller.dispose();
     }
     controller =
         new QRReaderController(cameraDescription, ResolutionPreset.low, [CodeFormat.qr, CodeFormat.pdf417], onCodeRead);
