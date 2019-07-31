@@ -14,6 +14,8 @@ A lightweight QR-code scanning plugin for flutter.
 
 ### Android specific
 
+Open the project in `Android Studio`, by opening `example/android/build.gradle`.
+
 Add the barcode ML model to the AndroidManifest.xml file of the app.
 https://firebase.google.com/docs/ml-kit/android/read-barcodes
 
