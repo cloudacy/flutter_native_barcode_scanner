@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 
 import 'package:qr_scan/qr_scan.dart';
 
-List<CameraDescription> cameras;
+List<QrScanCamera> cameras;
 
 Future<Null> main() async {
   // Fetch the available cameras before initializing the app.
   try {
-    cameras = await availableCameras();
-  } on QRReaderException catch (e) {
-    logError(e.code, e.description);
+    cameras = await QrScan.getCameras();
+  } on QrScanException catch (e) {
+    logError(e.code, e.message);
   }
 
   runApp(new MyApp());
@@ -22,51 +22,15 @@ class MyApp extends StatefulWidget {
   _MyAppState createState() => _MyAppState();
 }
 
-class _MyAppState extends State<MyApp> /* with SingleTickerProviderStateMixin*/ {
-  // @override
-  // Widget build(BuildContext context) {
-  //   return MaterialApp(
-  //     home: Scaffold(
-  //       appBar: AppBar(
-  //         title: Text('QR Scanner'),
-  //       ),
-  //       body: QrScan(),
-  //     ),
-  //   );
-  // }
-
+class _MyAppState extends State<MyApp> {
   QRReaderController controller;
   final _scaffoldKey = GlobalKey<ScaffoldState>();
-  /*
-  AnimationController animationController;
-  Animation<double> verticalPosition;
-  */
+
   @override
   void initState() {
     super.initState();
 
-    /*
-    animationController = new AnimationController(
-      vsync: this,
-      duration: new Duration(seconds: 3),
-    );
-
-    animationController.addListener(() {
-      this.setState(() {});
-    });
-    animationController.forward();
-
-    verticalPosition = Tween<double>(begin: 0.0, end: 300.0)
-        .animate(CurvedAnimation(parent: animationController, curve: Curves.linear))
-          ..addStatusListener((state) {
-            if (state == AnimationStatus.completed) {
-              animationController.reverse();
-            } else if (state == AnimationStatus.dismissed) {
-              animationController.forward();
-            }
-          });
-    */
-    // pick the first available camera
+    // Use the first camera in the list of available cameras.
     if (cameras.isNotEmpty) {
       onNewCameraSelected(cameras[0]);
     } else {
@@ -91,27 +55,6 @@ class _MyAppState extends State<MyApp> /* with SingleTickerProviderStateMixin*/ 
                 ),
               ),
             ),
-            // Center(
-            //   child: Stack(
-            //     children: <Widget>[
-            //       SizedBox(
-            //         height: 300.0,
-            //         width: 300.0,
-            //         child: Container(
-            //           decoration: BoxDecoration(border: Border.all(color: Colors.red, width: 2.0)),
-            //         ),
-            //       ),
-            //       Positioned(
-            //         top: verticalPosition.value,
-            //         child: Container(
-            //           width: 300.0,
-            //           height: 2.0,
-            //           color: Colors.red,
-            //         ),
-            //       )
-            //     ],
-            //   ),
-            // ),
           ])),
     );
   }
@@ -142,7 +85,7 @@ class _MyAppState extends State<MyApp> /* with SingleTickerProviderStateMixin*/ 
     // new Future.delayed(const Duration(seconds: 5), controller.startScanning);
   }
 
-  void onNewCameraSelected(CameraDescription cameraDescription) async {
+  void onNewCameraSelected(QrScanCamera cameraDescription) async {
     if (controller != null) {
       controller.dispose();
     }
@@ -160,9 +103,9 @@ class _MyAppState extends State<MyApp> /* with SingleTickerProviderStateMixin*/ 
     try {
       print('initializing ...');
       await controller.initialize();
-    } on QRReaderException catch (e) {
-      logError(e.code, e.description);
-      print('Error: ${e.code}\n${e.description}');
+    } on QrScanException catch (e) {
+      logError(e.code, e.message);
+      print('Error: ${e.code}\n${e.message}');
     }
 
     if (mounted) {

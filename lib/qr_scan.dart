@@ -11,51 +11,34 @@ final MethodChannel _channel = const MethodChannel('io.cloudacy.qr_scan');
 class QrScan extends StatefulWidget {
   @override
   _QrScanState createState() => _QrScanState();
+
+  /// Returns a list of available cameras.
+  ///
+  /// May throw a [QrScanException].
+  static Future<List<QrScanCamera>> getCameras() async {
+    try {
+      final List<dynamic> cameras = await _channel.invokeMethod('availableCameras');
+      print('cameras:');
+      print(cameras);
+      return cameras.map((dynamic camera) {
+        return new QrScanCamera(
+          id: camera['id'],
+          lensDirection: _parseCameraLensDirection(camera['lensFacing']),
+        );
+      }).toList();
+    } on PlatformException catch (e) {
+      throw new QrScanException(e.code, e.message);
+    }
+  }
 }
 
 class _QrScanState extends State<QrScan> {
-  // static const MethodChannel _channel = const MethodChannel('io.cloudacy.qr_scan');
   bool running = false;
   int textureId;
 
   @override
-  void initState() {
-    super.initState();
-
-    // First get available cameras.
-    // Then invoke the initialize method with the id of the chosen camera.
-
-    // prepareCamera();
-  }
-
-  void prepareCamera() async {
-    final dynamic data = await _channel.invokeMethod('initialize', <String, dynamic>{'cameraName': 'test'});
-    print(data.toString());
-    //setState(() {
-    //  textureId = data['textureId'];
-    //});
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return Column(
-      children: <Widget>[
-        if (textureId != null && running)
-          Expanded(
-            child: Texture(textureId: textureId),
-          ),
-        RaisedButton(
-          child: Text('start'),
-          onPressed: () async {
-            await _channel.invokeMethod('startImageStream');
-            print('started');
-            setState(() {
-              running = true;
-            });
-          },
-        ),
-      ],
-    );
+    return Text('not used yet.');
   }
 }
 
@@ -117,34 +100,15 @@ CameraLensDirection _parseCameraLensDirection(String string) {
   throw new ArgumentError('Unknown CameraLensDirection value');
 }
 
-/// Completes with a list of available cameras.
-///
-/// May throw a [QRReaderException].
-Future<List<CameraDescription>> availableCameras() async {
-  try {
-    final List<dynamic> cameras = await _channel.invokeMethod('availableCameras');
-    print('cameras:');
-    print(cameras);
-    return cameras.map((dynamic camera) {
-      return new CameraDescription(
-        id: camera['id'],
-        lensDirection: _parseCameraLensDirection(camera['lensFacing']),
-      );
-    }).toList();
-  } on PlatformException catch (e) {
-    throw new QRReaderException(e.code, e.message);
-  }
-}
-
 /// This is thrown when the plugin reports an error.
-class QRReaderException implements Exception {
+class QrScanException implements Exception {
   String code;
-  String description;
+  String message;
 
-  QRReaderException(this.code, this.description);
+  QrScanException(this.code, this.message);
 
   @override
-  String toString() => '$runtimeType($code, $description)';
+  String toString() => '$runtimeType($code, $message)';
 }
 
 // Build the UI texture view of the video data with textureId.
@@ -211,7 +175,7 @@ class QRReaderValue {
 }
 
 class QRReaderController extends ValueNotifier<QRReaderValue> {
-  final CameraDescription description;
+  final QrScanCamera description;
   final ResolutionPreset resolutionPreset;
   final Function onCode;
   final List<CodeFormat> codeFormats;
@@ -225,7 +189,7 @@ class QRReaderController extends ValueNotifier<QRReaderValue> {
 
   /// Initializes the camera on the device.
   ///
-  /// Throws a [QRReaderException] if the initialization fails.
+  /// Throws a [QrScanException] if the initialization fails.
   Future<Null> initialize() async {
     if (_isDisposed) {
       return new Future<Null>.value(null);
@@ -261,7 +225,7 @@ class QRReaderController extends ValueNotifier<QRReaderValue> {
         ),
       );
     } on PlatformException catch (e) {
-      throw new QRReaderException(e.code, e.message);
+      throw new QrScanException(e.code, e.message);
     }
     _creatingCompleter.complete(null);
     return _creatingCompleter.future;
@@ -269,16 +233,16 @@ class QRReaderController extends ValueNotifier<QRReaderValue> {
 
   /// Start a QR scan.
   ///
-  /// Throws a [QRReaderException] if the capture fails.
+  /// Throws a [QrScanException] if the capture fails.
   Future<Null> startScanning() async {
     if (!value.isInitialized || _isDisposed) {
-      throw new QRReaderException(
+      throw new QrScanException(
         'Uninitialized QRReaderController',
         'startScanning was called on uninitialized QRReaderController',
       );
     }
     if (value.isScanning) {
-      throw new QRReaderException(
+      throw new QrScanException(
         'A scan has already started.',
         'startScanning was called when a recording is already started.',
       );
@@ -290,7 +254,7 @@ class QRReaderController extends ValueNotifier<QRReaderValue> {
         <String, dynamic>{'textureId': _textureId},
       );
     } on PlatformException catch (e) {
-      throw new QRReaderException(e.code, e.message);
+      throw new QrScanException(e.code, e.message);
     }
   }
 
@@ -311,15 +275,15 @@ class QRReaderController extends ValueNotifier<QRReaderValue> {
   }
 }
 
-class CameraDescription {
+class QrScanCamera {
   final String id;
   final CameraLensDirection lensDirection;
 
-  CameraDescription({this.id, this.lensDirection});
+  QrScanCamera({this.id, this.lensDirection});
 
   @override
   bool operator ==(Object o) {
-    return o is CameraDescription && o.id == id && o.lensDirection == lensDirection;
+    return o is QrScanCamera && o.id == id && o.lensDirection == lensDirection;
   }
 
   @override
