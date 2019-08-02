@@ -11,9 +11,16 @@ import android.app.Activity
 import android.view.Surface
 import android.content.Context
 import android.content.pm.PackageManager
+import android.graphics.ImageFormat
 import android.hardware.camera2.*
+import android.media.ImageReader
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.google.android.gms.tasks.OnCompleteListener
+import com.google.android.gms.tasks.Task
+import com.google.firebase.ml.vision.FirebaseVision
+import com.google.firebase.ml.vision.barcode.FirebaseVisionBarcode
+import com.google.firebase.ml.vision.common.FirebaseVisionImage
 
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
@@ -98,21 +105,43 @@ class QrScanPlugin : MethodCallHandler {
     cameraManager.openCamera(cameraId, object : CameraDevice.StateCallback() {
       override fun onOpened(cameraDevice: CameraDevice) {
         try {
+          // This surface is used for the preview.
           val surfaceTexture = textureEntry.surfaceTexture()
           // TODO: fix preview Size. See computeBestPreviewAndRecordingSize in camera plugin
           surfaceTexture.setDefaultBufferSize(100, 100)
-          val captureRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW)
-
-          val surfaces = mutableListOf<Surface>()
-
           val previewSurface = Surface(surfaceTexture)
-          surfaces.add(previewSurface)
-          captureRequestBuilder.addTarget(previewSurface)
 
-          cameraDevice.createCaptureSession(surfaces, object : CameraCaptureSession.StateCallback() {
+          // This surface is used for the qr-code detection.
+          // Inspired by https://medium.com/@mt1729/an-android-journey-barcode-scanning-with-mobile-vision-api-and-camera2-part-1-8a97cc0d6747
+          val imageReader = ImageReader.newInstance(100, 100, ImageFormat.YUV_420_888, 1)
+          imageReader.setOnImageAvailableListener({ reader ->
+            val image = reader.acquireNextImage()
+
+            val detector = FirebaseVision.getInstance().visionBarcodeDetector
+            val detectionTask = detector.detectInImage(FirebaseVisionImage.fromMediaImage(image, Surface.ROTATION_0))
+
+            detectionTask.addOnCompleteListener(object: OnCompleteListener<List<FirebaseVisionBarcode>> {
+              override fun onComplete(detections: Task<List<FirebaseVisionBarcode>>) {
+                if (detections.result!!.isNotEmpty()) {
+                  println("Barcode detected")
+                  println(detections.result!![0])
+                } else {
+                  println("No barcode detected")
+                }
+              }
+            })
+
+            reader.close()
+          }, null)
+
+          cameraDevice.createCaptureSession(listOf(previewSurface, imageReader.surface), object : CameraCaptureSession.StateCallback() {
             override fun onConfigured(cameraCaptureSession: CameraCaptureSession) {
               try {
-                captureRequestBuilder.set(CaptureRequest.CONTROL_MODE, CaptureRequest.CONTROL_MODE_AUTO)
+                val captureRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW)
+
+                captureRequestBuilder.addTarget(previewSurface)
+                captureRequestBuilder.addTarget(imageReader.surface)
+                //captureRequestBuilder.set(CaptureRequest.CONTROL_MODE, CaptureRequest.CONTROL_MODE_AUTO)
                 cameraCaptureSession.setRepeatingRequest(captureRequestBuilder.build(), null, null)
 
                 result.success(mapOf(
@@ -121,16 +150,16 @@ class QrScanPlugin : MethodCallHandler {
                   "previewHeight" to 100
                 ))
               } catch (e: Exception) {
-                result.error("QrScanOpen", e.message, null)
+                result.error("QrScanCapture", e.message, null)
               }
             }
 
             override fun onConfigureFailed(cameraCaptureSession: CameraCaptureSession) {
-              result.error("QrScanConfig", "", null)
+              result.error("QrScanCaptureConfig", "", null)
             }
           }, null)
         } catch (e: Exception) {
-          result.error("QrScanPreview", e.message, null)
+          result.error("QrScanOpen", e.message, null)
           cameraDevice.close()
         }
       }
