@@ -59,6 +59,8 @@ class QrScanPlugin : MethodCallHandler {
     // It defines the type of permission request. It will be used at the callback to check, which type of request it was.
     const val CAMERA_REQUEST_ID = 71727363
 
+    val barcodeValueTypes = listOf("unknown", "contact", "email", "isbn", "phone", "product", "sms", "text", "url", "wifi", "geo", "event", "license")
+
     @JvmStatic
     fun registerWith(registrar: Registrar) {
       // Prepare the method-channel and initialize the plugin.
@@ -114,24 +116,27 @@ class QrScanPlugin : MethodCallHandler {
           // This surface is used for the qr-code detection.
           // Inspired by https://medium.com/@mt1729/an-android-journey-barcode-scanning-with-mobile-vision-api-and-camera2-part-1-8a97cc0d6747
           val imageReader = ImageReader.newInstance(100, 100, ImageFormat.YUV_420_888, 1)
-          imageReader.setOnImageAvailableListener({ reader ->
-            val image = reader.acquireNextImage()
+          imageReader.setOnImageAvailableListener({
+            val image = imageReader.acquireNextImage()
 
             val detector = FirebaseVision.getInstance().visionBarcodeDetector
             val detectionTask = detector.detectInImage(FirebaseVisionImage.fromMediaImage(image, Surface.ROTATION_0))
 
-            detectionTask.addOnCompleteListener(object: OnCompleteListener<List<FirebaseVisionBarcode>> {
-              override fun onComplete(detections: Task<List<FirebaseVisionBarcode>>) {
-                if (detections.result!!.isNotEmpty()) {
-                  println("Barcode detected")
-                  println(detections.result!![0])
-                } else {
-                  println("No barcode detected")
-                }
+            detectionTask.addOnCompleteListener { detections ->
+              if (detections.result!!.isNotEmpty()) {
+                val barcode = detections.result!![0]
+                println("Barcode detected")
+                channel.invokeMethod("code", mapOf(
+                  "type" to barcodeValueTypes[barcode.valueType - 1],
+                  "value" to barcode.rawValue
+                ))
+                println(barcode.valueType)
+              } else {
+                println("No barcode detected")
               }
-            })
+            }
 
-            reader.close()
+            image.close()
           }, null)
 
           cameraDevice.createCaptureSession(listOf(previewSurface, imageReader.surface), object : CameraCaptureSession.StateCallback() {
@@ -141,7 +146,10 @@ class QrScanPlugin : MethodCallHandler {
 
                 captureRequestBuilder.addTarget(previewSurface)
                 captureRequestBuilder.addTarget(imageReader.surface)
-                //captureRequestBuilder.set(CaptureRequest.CONTROL_MODE, CaptureRequest.CONTROL_MODE_AUTO)
+
+                // Optional. (auto-exposure, auto-white-balance, auto-focus)
+                captureRequestBuilder.set(CaptureRequest.CONTROL_MODE, CaptureRequest.CONTROL_MODE_AUTO)
+
                 cameraCaptureSession.setRepeatingRequest(captureRequestBuilder.build(), null, null)
 
                 result.success(mapOf(

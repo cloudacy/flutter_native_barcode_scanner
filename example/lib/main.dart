@@ -134,9 +134,9 @@ class _MyAppState extends State<MyApp> /* with SingleTickerProviderStateMixin*/ 
     }
   }
 
-  void onCodeRead(dynamic value) {
-    print(value.toString());
-    _scaffoldKey.currentState.showSnackBar(SnackBar(content: Text(value.toString())));
+  void onCode(dynamic value) {
+    print(value);
+    //_scaffoldKey.currentState.showSnackBar(SnackBar(content: Text(value.toString())));
     // ... do something
     // wait 5 seconds then start scanning again.
     // new Future.delayed(const Duration(seconds: 5), controller.startScanning);
@@ -147,7 +147,7 @@ class _MyAppState extends State<MyApp> /* with SingleTickerProviderStateMixin*/ 
       controller.dispose();
     }
     controller =
-        new QRReaderController(cameraDescription, ResolutionPreset.low, [CodeFormat.qr, CodeFormat.pdf417], onCodeRead);
+        new QRReaderController(cameraDescription, ResolutionPreset.low, [CodeFormat.qr, CodeFormat.pdf417], onCode);
 
     // If the controller is updated then update the UI.
     controller.addListener(() {

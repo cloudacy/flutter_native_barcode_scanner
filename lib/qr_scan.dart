@@ -213,14 +213,14 @@ class QRReaderValue {
 class QRReaderController extends ValueNotifier<QRReaderValue> {
   final CameraDescription description;
   final ResolutionPreset resolutionPreset;
-  final Function onCodeRead;
+  final Function onCode;
   final List<CodeFormat> codeFormats;
 
   int _textureId;
   bool _isDisposed = false;
   Completer<Null> _creatingCompleter;
 
-  QRReaderController(this.description, this.resolutionPreset, this.codeFormats, this.onCodeRead)
+  QRReaderController(this.description, this.resolutionPreset, this.codeFormats, this.onCode)
       : super(const QRReaderValue.uninitialized());
 
   /// Initializes the camera on the device.
@@ -299,7 +299,7 @@ class QRReaderController extends ValueNotifier<QRReaderValue> {
     switch (call.method) {
       case "code":
         // if (value.isScanning) {
-        onCodeRead(call.arguments);
+        onCode(call.arguments);
         print("CODE HERE!");
         value = value.copyWith(isScanning: false);
         break;
