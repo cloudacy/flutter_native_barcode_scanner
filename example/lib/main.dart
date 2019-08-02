@@ -23,7 +23,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  QRReaderController controller;
+  QrScanController controller;
   final _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
@@ -61,7 +61,7 @@ class _MyAppState extends State<MyApp> {
 
   /// Display the preview from the camera (or a message if the preview is not available).
   Widget _cameraPreviewWidget() {
-    if (controller == null || !controller.value.isInitialized) {
+    if (controller == null || !controller.value.initialized) {
       return const Text(
         'No camera selected',
         style: const TextStyle(
@@ -72,32 +72,29 @@ class _MyAppState extends State<MyApp> {
     } else {
       return new AspectRatio(
         aspectRatio: controller.value.aspectRatio,
-        child: new QRReaderPreview(controller),
+        child: new QrScan(controller: controller),
       );
     }
   }
 
   void onCode(dynamic value) {
     print(value);
-    //_scaffoldKey.currentState.showSnackBar(SnackBar(content: Text(value.toString())));
-    // ... do something
-    // wait 5 seconds then start scanning again.
-    // new Future.delayed(const Duration(seconds: 5), controller.startScanning);
   }
 
   void onNewCameraSelected(QrScanCamera cameraDescription) async {
     if (controller != null) {
       controller.dispose();
     }
-    controller =
-        new QRReaderController(cameraDescription, ResolutionPreset.low, [CodeFormat.qr, CodeFormat.pdf417], onCode);
+    controller = new QrScanController(
+      camera: cameraDescription,
+      resolution: QrScanResolution.low,
+      formats: [QrScanCodeFormat.qr, QrScanCodeFormat.pdf417],
+      onCode: onCode,
+    );
 
     // If the controller is updated then update the UI.
     controller.addListener(() {
       if (mounted) setState(() {});
-      if (controller.value.hasError) {
-        print('Camera error ${controller.value.errorDescription}');
-      }
     });
 
     try {
@@ -110,7 +107,6 @@ class _MyAppState extends State<MyApp> {
 
     if (mounted) {
       setState(() {});
-      // controller.startScanning();
     }
   }
 }
