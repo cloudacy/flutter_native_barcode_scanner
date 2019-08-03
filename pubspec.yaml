@@ -1,8 +1,8 @@
 name: qr_scan
-description: A new flutter plugin project.
-version: 0.0.1
-author:
-homepage:
+description: A lightweight native barcode scanning plugin for flutter.
+version: 0.0.2
+author: Dominik Kuen <d.kuen@cloudacy.io> & Patrick Kuen <p.kuen@cloudacy.io>
+homepage: cloudacy.io
 
 environment:
   sdk: ">=2.1.0 <3.0.0"
@@ -13,7 +13,6 @@ dependencies:
 
   firebase_core: ">0.4.0"
   firebase_ml_vision: ">0.9.0"
-
 
 dev_dependencies:
   flutter_test:
