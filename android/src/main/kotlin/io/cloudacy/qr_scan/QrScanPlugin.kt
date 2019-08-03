@@ -123,17 +123,17 @@ class QrScanPlugin : MethodCallHandler {
             val detectionTask = detector.detectInImage(FirebaseVisionImage.fromMediaImage(image, Surface.ROTATION_0))
 
             detectionTask.addOnCompleteListener { detections ->
-              if (detections.result!!.isNotEmpty()) {
-                val barcode = detections.result!![0]
-                println("Barcode detected")
-                channel.invokeMethod("code", mapOf(
-                  "type" to barcodeValueTypes[barcode.valueType - 1],
-                  "value" to barcode.rawValue
-                ))
-                println(barcode.valueType)
-              } else {
-                println("No barcode detected")
+              if (detections.result!!.isEmpty()) {
+                println("No Barcode detected.")
+                return@addOnCompleteListener
               }
+
+              val barcode = detections.result!![0]
+              println("Barcode detected")
+              channel.invokeMethod("code", mapOf(
+                "type" to barcodeValueTypes[barcode.valueType - 1],
+                "value" to barcode.rawValue
+              ))
             }
 
             image.close()

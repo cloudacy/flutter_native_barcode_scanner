@@ -5,20 +5,42 @@ import 'utils.dart';
 import 'qr_scan_camera.dart';
 
 class QrScanControllerValue {
-  bool isScanning = false;
-  int textureId;
+  final bool isScanning;
 
-  int previewWidth;
-  int previewHeight;
+  final int previewTextureId;
+  final int previewWidth;
+  final int previewHeight;
+
+  const QrScanControllerValue({
+    this.previewTextureId,
+    this.previewWidth,
+    this.previewHeight,
+    this.isScanning = false,
+  });
 
   get initialized {
-    return textureId != null;
+    return previewTextureId != null;
   }
 
   /// Returns `previewHeight / previewWidth`.
   ///
   /// Can only be called when [initialize] is done.
   double get aspectRatio => previewHeight / previewWidth;
+
+  /// Returns a copy of this QrScanControllerValue instance.
+  /// Given arguments will be overwritten in the copied version.
+  QrScanControllerValue copyWith({
+    int previewTextureId,
+    int previewWidth,
+    int previewHeight,
+    bool isScanning,
+  }) =>
+      QrScanControllerValue(
+        previewTextureId: previewTextureId ?? this.previewTextureId,
+        previewWidth: previewWidth ?? this.previewWidth,
+        previewHeight: previewHeight ?? this.previewHeight,
+        isScanning: isScanning ?? this.isScanning,
+      );
 }
 
 class QrScanController extends ValueNotifier<QrScanControllerValue> {
@@ -59,18 +81,20 @@ class QrScanController extends ValueNotifier<QrScanControllerValue> {
         <String, dynamic>{
           'cameraId': camera.id,
           'resolution': qrScanResolutions[resolution],
-          'codeFormats': [QrScanCodeFormat.qr].map((format) => qrScanCodeFormats[format]),
+          'codeFormats': [QrScanCodeFormat.qr].map((format) => qrScanCodeFormats[format]).toList(),
         },
       );
 
       print('initialize reply');
       print(reply);
 
-      value.textureId = reply['textureId'];
-      value.previewWidth = reply['previewWidth'];
-      value.previewHeight = reply['previewHeight'];
+      value = value.copyWith(
+        previewTextureId: reply['textureId'],
+        previewWidth: reply['previewWidth'],
+        previewHeight: reply['previewHeight'],
+      );
     } on PlatformException catch (e) {
-      throw new QrScanException(e.code, e.message);
+      throw QrScanException(e.code, e.message);
     }
   }
 
@@ -78,22 +102,25 @@ class QrScanController extends ValueNotifier<QrScanControllerValue> {
   ///
   /// Throws a [QrScanException] if the capture fails.
   Future<Null> startScanning() async {
-    if (value.textureId == null) {
-      throw new QrScanException('Not initialized.', 'startScanning was called on uninitialized QRReaderController');
+    if (value.previewTextureId == null) {
+      throw QrScanException('Not initialized.', 'startScanning was called on uninitialized QRReaderController');
     }
 
     if (value.isScanning) {
-      throw new QrScanException('Already scanning.', 'startScanning was called when a recording is already started.');
+      throw QrScanException('Already scanning.', 'startScanning was called when a recording is already started.');
     }
 
     try {
       await qrScanMethodChannel.invokeMethod(
         'startScanning',
-        <String, dynamic>{'textureId': value.textureId},
+        <String, dynamic>{'textureId': value.previewTextureId},
       );
-      value.isScanning = true;
+
+      value = value.copyWith(
+        isScanning: true,
+      );
     } on PlatformException catch (e) {
-      throw new QrScanException(e.code, e.message);
+      throw QrScanException(e.code, e.message);
     }
   }
 }

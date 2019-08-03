@@ -21,13 +21,13 @@ class QrScan extends StatefulWidget {
       print('cameras:');
       print(cameras);
       return cameras.map((dynamic camera) {
-        return new QrScanCamera(
+        return QrScanCamera(
           id: camera['id'],
           lensDirection: qrScanLensdirectionInv[camera['lensFacing']],
         );
       }).toList();
     } on PlatformException catch (e) {
-      throw new QrScanException(e.code, e.message);
+      throw QrScanException(e.code, e.message);
     }
   }
 
@@ -40,13 +40,20 @@ class QrScan extends StatefulWidget {
 }
 
 class _QrScanState extends State<QrScan> {
-  bool running = false;
-  int textureId;
-
   @override
   Widget build(BuildContext context) {
-    return widget.controller.value.textureId != null
-        ? Texture(textureId: widget.controller.value.textureId)
-        : Container();
+    if (!widget.controller.value.initialized) {
+      return const Text('Not initialized.');
+    }
+
+    // Acutally call controller.startScanning() before this can work.
+    // if (!widget.controller.value.isScanning) {
+    //   return const Text('Not scanning.');
+    // }
+
+    return AspectRatio(
+      aspectRatio: widget.controller.value.aspectRatio,
+      child: Texture(textureId: widget.controller.value.previewTextureId),
+    );
   }
 }

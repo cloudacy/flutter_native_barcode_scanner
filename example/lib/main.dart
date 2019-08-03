@@ -14,7 +14,7 @@ Future<Null> main() async {
     logError(e.code, e.message);
   }
 
-  runApp(new MyApp());
+  runApp(MyApp());
 }
 
 class MyApp extends StatefulWidget {
@@ -46,6 +46,7 @@ class _MyAppState extends State<MyApp> {
 
     // Update the state, if the controller value changes.
     controller.addListener(() {
+      print('update state');
       if (mounted) setState(() {});
     });
 
@@ -71,7 +72,7 @@ class _MyAppState extends State<MyApp> {
           title: const Text('Plugin example app'),
         ),
         body: Center(
-          child: controller.value.initialized ? QrScan(controller: controller) : const Text('Not initialized.'),
+          child: controller.value.initialized ? QrScan(controller: controller) : const Text('Please wait ...'),
         ),
       ),
     );
