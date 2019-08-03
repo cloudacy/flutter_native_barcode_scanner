@@ -4,6 +4,8 @@ import 'package:qr_scan/qr_scan.dart';
 
 List<QrScanCamera> cameras;
 
+void logError(String code, String message) => print('Error: $code: $message');
+
 Future<Null> main() async {
   // Fetch the available cameras before initializing the app.
   try {
@@ -15,8 +17,6 @@ Future<Null> main() async {
   runApp(new MyApp());
 }
 
-void logError(String code, String message) => print('Error: $code\nError Message: $message');
-
 class MyApp extends StatefulWidget {
   @override
   _MyAppState createState() => _MyAppState();
@@ -24,89 +24,56 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   QrScanController controller;
-  final _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
     super.initState();
 
-    // Use the first camera in the list of available cameras.
-    if (cameras.isNotEmpty) {
-      onNewCameraSelected(cameras[0]);
-    } else {
-      print('No cameras available.');
+    // If no camera is available, abort here.
+    if (cameras.isEmpty) {
+      logError('QrScanNoCameraAvailable', 'No cameras available.');
+      return;
     }
+
+    // Create a new QrScanController and pass the selected camera to it.
+    // Also add the onCode callback, which holds the value from detected barcodes.
+    controller = QrScanController(
+      camera: cameras[0],
+      formats: [QrScanCodeFormat.qr],
+      resolution: QrScanResolution.medium,
+      onCode: onCode,
+    );
+
+    // Update the state, if the controller value changes.
+    controller.addListener(() {
+      if (mounted) setState(() {});
+    });
+
+    // Initialize QrScan.
+    try {
+      print('initializing ...');
+      controller.initialize();
+    } on QrScanException catch (e) {
+      logError(e.code, e.message);
+    }
+  }
+
+  void onCode(dynamic value) {
+    print('onCode');
+    print(value);
   }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-          key: _scaffoldKey,
-          appBar: AppBar(
-            title: const Text('Plugin example app'),
-          ),
-          body: Stack(children: <Widget>[
-            new Container(
-              child: new Padding(
-                padding: const EdgeInsets.all(0.0),
-                child: new Center(
-                  child: _cameraPreviewWidget(),
-                ),
-              ),
-            ),
-          ])),
-    );
-  }
-
-  /// Display the preview from the camera (or a message if the preview is not available).
-  Widget _cameraPreviewWidget() {
-    if (controller == null || !controller.value.initialized) {
-      return const Text(
-        'No camera selected',
-        style: const TextStyle(
-          fontSize: 24.0,
-          fontWeight: FontWeight.w900,
+        appBar: AppBar(
+          title: const Text('Plugin example app'),
         ),
-      );
-    } else {
-      return new AspectRatio(
-        aspectRatio: controller.value.aspectRatio,
-        child: new QrScan(controller: controller),
-      );
-    }
-  }
-
-  void onCode(dynamic value) {
-    print(value);
-  }
-
-  void onNewCameraSelected(QrScanCamera cameraDescription) async {
-    if (controller != null) {
-      controller.dispose();
-    }
-    controller = new QrScanController(
-      camera: cameraDescription,
-      resolution: QrScanResolution.low,
-      formats: [QrScanCodeFormat.qr, QrScanCodeFormat.pdf417],
-      onCode: onCode,
+        body: Center(
+          child: controller.value.initialized ? QrScan(controller: controller) : const Text('Not initialized.'),
+        ),
+      ),
     );
-
-    // If the controller is updated then update the UI.
-    controller.addListener(() {
-      if (mounted) setState(() {});
-    });
-
-    try {
-      print('initializing ...');
-      await controller.initialize();
-    } on QrScanException catch (e) {
-      logError(e.code, e.message);
-      print('Error: ${e.code}\n${e.message}');
-    }
-
-    if (mounted) {
-      setState(() {});
-    }
   }
 }

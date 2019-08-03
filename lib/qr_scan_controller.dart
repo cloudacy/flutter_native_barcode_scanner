@@ -28,10 +28,10 @@ class QrScanController extends ValueNotifier<QrScanControllerValue> {
   final void Function(dynamic value) onCode;
 
   QrScanController({
-    this.camera,
-    this.resolution,
-    this.formats,
-    this.onCode,
+    @required this.camera,
+    this.resolution = QrScanResolution.medium,
+    this.formats = QrScanCodeFormat.values,
+    @required this.onCode,
   }) : super(QrScanControllerValue());
 
   Future<dynamic> _methodCallHandler(MethodCall call) async {
@@ -58,7 +58,7 @@ class QrScanController extends ValueNotifier<QrScanControllerValue> {
         'initialize',
         <String, dynamic>{
           'cameraId': camera.id,
-          'resolutionPreset': qrScanResolutions[QrScanResolution.low],
+          'resolution': qrScanResolutions[resolution],
           'codeFormats': [QrScanCodeFormat.qr].map((format) => qrScanCodeFormats[format]),
         },
       );
