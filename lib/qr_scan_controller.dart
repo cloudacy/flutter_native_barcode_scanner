@@ -62,9 +62,14 @@ class QrScanController extends ValueNotifier<QrScanControllerValue> {
       case "code":
         print('Received code.');
         onCode(call.arguments);
+        value = value.copyWith(isScanning: false);
         break;
       case 'cameraClosed':
         print('Camera closed.');
+        value = value.copyWith(
+          previewTextureId: null,
+          isScanning: false,
+        );
         break;
     }
   }

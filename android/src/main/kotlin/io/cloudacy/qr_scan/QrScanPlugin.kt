@@ -109,7 +109,7 @@ class QrScanPlugin : MethodCallHandler {
           // This surface is used for the qr-code detection.
           // Inspired by https://medium.com/@mt1729/an-android-journey-barcode-scanning-with-mobile-vision-api-and-camera2-part-1-8a97cc0d6747
           val imageReader = ImageReader.newInstance(100, 100, ImageFormat.YUV_420_888, 1)
-          imageReader.setOnImageAvailableListener({
+          imageReader.setOnImageAvailableListener({ reader ->
             val image = imageReader.acquireNextImage()
 
             val detector = FirebaseVision.getInstance().visionBarcodeDetector
@@ -117,16 +117,19 @@ class QrScanPlugin : MethodCallHandler {
 
             detectionTask.addOnCompleteListener { detections ->
               if (detections.result!!.isEmpty()) {
-                println("No Barcode detected.")
                 return@addOnCompleteListener
               }
 
               val barcode = detections.result!![0]
-              println("Barcode detected")
               channel.invokeMethod("code", mapOf(
                 "type" to barcodeValueTypes[barcode.valueType - 1],
                 "value" to barcode.rawValue
               ))
+
+              // As soon as a code was detected, close the camera.
+              cameraDevice.close()
+              textureEntry.release()
+              reader.close()
             }
 
             image.close()
