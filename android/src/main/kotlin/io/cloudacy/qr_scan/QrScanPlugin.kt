@@ -137,6 +137,10 @@ class QrScanPlugin : MethodCallHandler {
 
           cameraDevice.createCaptureSession(listOf(previewSurface, imageReader.surface), object : CameraCaptureSession.StateCallback() {
             override fun onConfigured(cameraCaptureSession: CameraCaptureSession) {
+              if (cameraDevice == null) {
+                result.error("QrScanCameraClosed", "The camera was closed during the configuration.", null)
+              }
+
               try {
                 val captureRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW)
 
@@ -208,22 +212,22 @@ class QrScanPlugin : MethodCallHandler {
     if (checkCameraPermission()) {
       openCamera(cameraId, result)
     } else {
-    // Prepare the permissionResultCheck callback.
-    cameraPermissionCallback = object : Runnable {
-      override fun run() {
-        // Unset the runnable to make sure it is not executed twice.
-        cameraPermissionCallback = null
+      // Prepare the permissionResultCheck callback.
+      cameraPermissionCallback = object : Runnable {
+        override fun run() {
+          // Unset the runnable to make sure it is not executed twice.
+          cameraPermissionCallback = null
 
-        // Check if the permission was granted.
-        // If the permission is still not granted, the user denied the permission and we have to abort here.
-        if (!checkCameraPermission()) {
-          result.error("QRPermissionDenied", "The camera permission was not granted!", null)
-          return
+          // Check if the permission was granted.
+          // If the permission is still not granted, the user denied the permission and we have to abort here.
+          if (!checkCameraPermission()) {
+            result.error("QRPermissionDenied", "The camera permission was not granted!", null)
+            return
+          }
+
+          openCamera(cameraId, result)
         }
-
-        openCamera(cameraId, result)
       }
-    }
 
       requestCameraPermission()
     }
