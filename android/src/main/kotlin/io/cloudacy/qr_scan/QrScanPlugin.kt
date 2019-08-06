@@ -202,6 +202,12 @@ class QrScanPlugin : MethodCallHandler {
       return
     }
 
+    // Check if we have permission to use the camera.
+    // If so, we open the camera directly.
+    // If not, we request the permission of the camera.
+    if (checkCameraPermission()) {
+      openCamera(cameraId, result)
+    } else {
     // Prepare the permissionResultCheck callback.
     cameraPermissionCallback = object : Runnable {
       override fun run() {
@@ -219,17 +225,36 @@ class QrScanPlugin : MethodCallHandler {
       }
     }
 
-    // Check if we have permission to use the camera.
-    // If so, we open the camera directly.
-    // If not, we request the permission of the camera.
-    if (checkCameraPermission()) {
-      openCamera(cameraId, result)
-    } else {
       requestCameraPermission()
     }
   }
 
   private fun getAvailableCameras(result: Result) {
+    // Check if we have permission to use the camera.
+    // If so, we continue.
+    // If not, we request the permission to access the camera list.
+    if (!checkCameraPermission()) {
+      // Prepare the permissionResultCheck callback.
+      cameraPermissionCallback = object : Runnable {
+        override fun run() {
+          // Unset the runnable to make sure it is not executed twice.
+          cameraPermissionCallback = null
+
+          // Check if the permission was granted.
+          // If the permission is still not granted, the user denied the permission and we have to abort here.
+          if (!checkCameraPermission()) {
+            result.error("QRPermissionDenied", "The camera permission was not granted!", null)
+            return
+          }
+
+          getAvailableCameras(result)
+        }
+      }
+
+      requestCameraPermission()
+      return
+    }
+
     try {
       val cameraIds = cameraManager.cameraIdList
       val cameras = mutableListOf<Map<String, Any>>()
