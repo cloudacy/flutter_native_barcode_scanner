@@ -1,6 +1,6 @@
 name: qr_scan
 description: A lightweight native barcode scanning plugin for flutter.
-version: 0.0.3
+version: 0.0.4
 author: Dominik Kuen <d.kuen@cloudacy.io> & Patrick Kuen <p.kuen@cloudacy.io>
 homepage: cloudacy.io
 
