@@ -2,18 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:qr_scan/qr_scan.dart';
 
-List<QrScanCamera> cameras;
-
-void logError(String code, String message) => print('Error: $code: $message');
-
 Future<Null> main() async {
-  // Fetch the available cameras before initializing the app.
-  try {
-    cameras = await QrScan.getCameras();
-  } on QrScanException catch (e) {
-    logError(e.code, e.message);
-  }
-
   runApp(MyApp());
 }
 
@@ -25,20 +14,24 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   QrScanController controller;
 
+  Future<List<QrScanCamera>> camerasFuture = QrScan.getCameras();
+
   @override
   void initState() {
     super.initState();
+  }
 
-    // If no camera is available, abort here.
-    if (cameras.isEmpty) {
-      logError('QrScanNoCameraAvailable', 'No cameras available.');
-      return;
-    }
+  @override
+  void dispose() {
+    if (controller != null) controller.dispose();
+    super.dispose();
+  }
 
+  void initController(QrScanCamera camera) {
     // Create a new QrScanController and pass the selected camera to it.
     // Also add the onCode callback, which holds the value from detected barcodes.
     controller = QrScanController(
-      camera: cameras[0],
+      camera: camera,
       formats: [QrScanCodeFormat.qr],
       resolution: QrScanResolution.medium,
       onCode: onCode,
@@ -51,12 +44,8 @@ class _MyAppState extends State<MyApp> {
     });
 
     // Initialize QrScan.
-    try {
-      print('initializing ...');
-      controller.initialize();
-    } on QrScanException catch (e) {
-      logError(e.code, e.message);
-    }
+    print('initializing ...');
+    controller.initialize();
   }
 
   void onCode(dynamic value) {
@@ -71,8 +60,41 @@ class _MyAppState extends State<MyApp> {
         appBar: AppBar(
           title: const Text('Plugin example app'),
         ),
-        body: Center(
-          child: controller.value.initialized ? QrScan(controller: controller) : const Text('Please wait ...'),
+        body: FutureBuilder(
+          future: camerasFuture,
+          builder: (BuildContext context, AsyncSnapshot<List<QrScanCamera>> data) {
+            if (data.connectionState != ConnectionState.done) {
+              return Center(child: CircularProgressIndicator());
+            }
+
+            if (data.hasError || !data.hasData) {
+              return Center(
+                child: const Text(
+                  'Unable to fetch available cameras.',
+                  style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                ),
+              );
+            }
+
+            List<QrScanCamera> cameras = data.data;
+
+            if (cameras.length == 0) {
+              return Center(
+                child: const Text(
+                  'No cameras available.',
+                  style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                ),
+              );
+            }
+
+            if (controller == null) {
+              initController(cameras[0]);
+            }
+
+            return Center(
+              child: QrScan(controller: controller),
+            );
+          },
         ),
       ),
     );
