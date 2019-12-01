@@ -137,6 +137,10 @@ class QrScanPlugin : MethodCallHandler {
 
           cameraDevice.createCaptureSession(listOf(previewSurface, imageReader.surface), object : CameraCaptureSession.StateCallback() {
             override fun onConfigured(cameraCaptureSession: CameraCaptureSession) {
+              if (cameraDevice == null) {
+                result.error("QrScanCameraClosed", "The camera was closed during the configuration.", null)
+              }
+
               try {
                 val captureRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW)
 
@@ -202,34 +206,59 @@ class QrScanPlugin : MethodCallHandler {
       return
     }
 
-    // Prepare the permissionResultCheck callback.
-    cameraPermissionCallback = object : Runnable {
-      override fun run() {
-        // Unset the runnable to make sure it is not executed twice.
-        cameraPermissionCallback = null
-
-        // Check if the permission was granted.
-        // If the permission is still not granted, the user denied the permission and we have to abort here.
-        if (!checkCameraPermission()) {
-          result.error("QRPermissionDenied", "The camera permission was not granted!", null)
-          return
-        }
-
-        openCamera(cameraId, result)
-      }
-    }
-
     // Check if we have permission to use the camera.
     // If so, we open the camera directly.
     // If not, we request the permission of the camera.
     if (checkCameraPermission()) {
       openCamera(cameraId, result)
     } else {
+      // Prepare the permissionResultCheck callback.
+      cameraPermissionCallback = object : Runnable {
+        override fun run() {
+          // Unset the runnable to make sure it is not executed twice.
+          cameraPermissionCallback = null
+
+          // Check if the permission was granted.
+          // If the permission is still not granted, the user denied the permission and we have to abort here.
+          if (!checkCameraPermission()) {
+            result.error("QRPermissionDenied", "The camera permission was not granted!", null)
+            return
+          }
+
+          openCamera(cameraId, result)
+        }
+      }
+
       requestCameraPermission()
     }
   }
 
   private fun getAvailableCameras(result: Result) {
+    // Check if we have permission to use the camera.
+    // If so, we continue.
+    // If not, we request the permission to access the camera list.
+    if (!checkCameraPermission()) {
+      // Prepare the permissionResultCheck callback.
+      cameraPermissionCallback = object : Runnable {
+        override fun run() {
+          // Unset the runnable to make sure it is not executed twice.
+          cameraPermissionCallback = null
+
+          // Check if the permission was granted.
+          // If the permission is still not granted, the user denied the permission and we have to abort here.
+          if (!checkCameraPermission()) {
+            result.error("QRPermissionDenied", "The camera permission was not granted!", null)
+            return
+          }
+
+          getAvailableCameras(result)
+        }
+      }
+
+      requestCameraPermission()
+      return
+    }
+
     try {
       val cameraIds = cameraManager.cameraIdList
       val cameras = mutableListOf<Map<String, Any>>()
