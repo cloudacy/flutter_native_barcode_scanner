@@ -18,8 +18,6 @@ class QrScan extends StatefulWidget {
   static Future<List<QrScanCamera>> getCameras() async {
     try {
       final List<dynamic> cameras = await qrScanMethodChannel.invokeMethod('availableCameras');
-      print('cameras:');
-      print(cameras);
       return cameras.map((dynamic camera) {
         return QrScanCamera(
           id: camera['id'],
