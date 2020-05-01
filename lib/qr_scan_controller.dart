@@ -95,8 +95,8 @@ class QrScanController extends ValueNotifier<QrScanControllerValue> {
 
       value = value.copyWith(
         previewTextureId: reply['textureId'],
-        previewWidth: reply['previewWidth'],
-        previewHeight: reply['previewHeight'],
+        previewWidth: (reply['previewWidth']).toInt(),
+        previewHeight: (reply['previewHeight']).toInt(),
       );
     } on PlatformException catch (e) {
       throw QrScanException(e.code, e.message);
