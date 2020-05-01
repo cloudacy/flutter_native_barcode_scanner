@@ -249,7 +249,9 @@ public class SwiftQrScanPlugin: NSObject, FlutterPlugin {
                     lensFacing = "front"
                 case .unspecified:
                     lensFacing = "external"
-                }
+                @unknown default:
+                  continue
+              }
                 reply.append(["id": device.uniqueID, "lensFacing": lensFacing])
             }
 
