@@ -4,14 +4,14 @@ import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 
 import 'utils.dart';
-import 'qr_scan_controller.dart';
-import 'qr_scan_camera.dart';
+import 'controller.dart';
+import 'camera.dart';
 
 export 'utils.dart';
-export 'qr_scan_controller.dart';
-export 'qr_scan_camera.dart';
+export 'controller.dart';
+export 'camera.dart';
 
-class QrScan extends StatefulWidget {
+class FlutterQrScan extends StatefulWidget {
   /// Returns a list of available cameras.
   ///
   /// May throw a [QrScanException].
@@ -31,13 +31,13 @@ class QrScan extends StatefulWidget {
 
   final QrScanController controller;
 
-  QrScan({this.controller});
+  FlutterQrScan({this.controller});
 
   @override
-  _QrScanState createState() => _QrScanState();
+  _FlutterQrScanState createState() => _FlutterQrScanState();
 }
 
-class _QrScanState extends State<QrScan> {
+class _FlutterQrScanState extends State<FlutterQrScan> {
   @override
   Widget build(BuildContext context) {
     if (!widget.controller.value.initialized) {

@@ -2,7 +2,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 import 'utils.dart';
-import 'qr_scan_camera.dart';
+import 'camera.dart';
 
 class QrScanControllerValue {
   final bool isScanning;

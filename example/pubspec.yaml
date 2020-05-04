@@ -1,6 +1,5 @@
-name: qr_scan_example
-description: Demonstrates how to use the qr_scan plugin.
-version: 1.0.0+1
+name: flutter_qr_scan_example
+description: Demonstrates how to use the flutter_qr_scan plugin.
 publish_to: "none"
 
 environment:
@@ -10,13 +9,15 @@ dependencies:
   flutter:
     sdk: flutter
 
+  # The following adds the Cupertino Icons font to your application.
+  # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^0.1.2
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
-  qr_scan:
+  flutter_qr_scan:
     path: ../
 
 # For information on the generic Dart part of this file, see the

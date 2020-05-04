@@ -1,4 +1,4 @@
-group 'io.cloudacy.qr_scan'
+group 'io.cloudacy.flutter_qr_scan'
 version '1.0-SNAPSHOT'
 
 buildscript {
@@ -41,6 +41,5 @@ android {
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    implementation 'androidx.core:core:1.0.0'
     implementation 'com.google.firebase:firebase-ml-vision:24.0.3'
 }

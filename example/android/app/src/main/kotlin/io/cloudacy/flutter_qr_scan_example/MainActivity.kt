@@ -1,4 +1,4 @@
-package io.cloudacy.qr_scan_example
+package io.cloudacy.flutter_qr_scan_example
 
 import androidx.annotation.NonNull;
 import io.flutter.embedding.android.FlutterActivity

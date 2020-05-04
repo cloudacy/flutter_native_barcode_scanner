@@ -1,6 +1,6 @@
 import 'package:flutter/services.dart';
 
-const MethodChannel qrScanMethodChannel = MethodChannel('io.cloudacy.qr_scan');
+const MethodChannel qrScanMethodChannel = MethodChannel('flutter_qr_scan');
 
 enum QrScanLensDirection { front, back, external }
 enum QrScanCodeFormat { codabar, code39, code93, code128, ean8, ean13, itf, upca, upce, aztec, datamatrix, pdf417, qr }

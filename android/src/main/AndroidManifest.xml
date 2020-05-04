@@ -1,4 +1,4 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-  package="io.cloudacy.qr_scan">
+  package="io.cloudacy.flutter_qr_scan">
   <uses-permission android:name="android.permission.CAMERA" />
 </manifest>

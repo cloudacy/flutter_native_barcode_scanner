@@ -37,7 +37,7 @@ android {
     }
 
     defaultConfig {
-        applicationId "io.cloudacy.qr_scan_example"
+        applicationId "io.cloudacy.flutter_qr_scan_example"
         minSdkVersion 21
         targetSdkVersion 28
         versionCode flutterVersionCode.toInteger()

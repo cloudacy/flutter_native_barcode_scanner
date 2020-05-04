@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:qr_scan/qr_scan.dart';
+import 'package:flutter_qr_scan/flutter_qr_scan.dart';
 
 Future<Null> main() async {
   runApp(MyApp());
@@ -14,7 +14,7 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   QrScanController controller;
 
-  Future<List<QrScanCamera>> camerasFuture = QrScan.getCameras();
+  Future<List<QrScanCamera>> camerasFuture = FlutterQrScan.getCameras();
 
   @override
   void initState() {
@@ -92,7 +92,7 @@ class _MyAppState extends State<MyApp> {
             }
 
             return Center(
-              child: QrScan(controller: controller),
+              child: FlutterQrScan(controller: controller),
             );
           },
         ),

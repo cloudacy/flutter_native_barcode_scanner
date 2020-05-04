@@ -1,6 +1,6 @@
-# qr_scan_example
+# flutter_qr_scan_example
 
-Demonstrates how to use the qr_scan plugin.
+Demonstrates how to use the flutter_qr_scan plugin.
 
 ## Getting Started
 
