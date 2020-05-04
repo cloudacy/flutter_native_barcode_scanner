@@ -1,4 +1,4 @@
-# qr_scan
+# flutter_qr_scan
 
 A lightweight QR-code scanning plugin for flutter.
 
