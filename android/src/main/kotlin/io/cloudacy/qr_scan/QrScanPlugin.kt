@@ -6,66 +6,88 @@ package io.cloudacy.qr_scan
 
 import android.Manifest
 import android.app.Activity
-import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.ImageFormat
 import android.hardware.camera2.*
 import android.media.ImageReader
 import android.view.Surface
+import android.view.TextureView
+import androidx.annotation.NonNull
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.firebase.ml.vision.FirebaseVision
 import com.google.firebase.ml.vision.common.FirebaseVisionImage
+import io.flutter.embedding.engine.plugins.FlutterPlugin
+import io.flutter.embedding.engine.plugins.activity.ActivityAware
+import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
+import io.flutter.embedding.engine.renderer.FlutterRenderer
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
+import io.flutter.plugin.common.PluginRegistry
 import io.flutter.plugin.common.PluginRegistry.Registrar
 import io.flutter.plugin.common.PluginRegistry.RequestPermissionsResultListener
-import io.flutter.view.FlutterView
 
-class QrScanPlugin : MethodCallHandler {
-  private val registrar: Registrar
-  private val activity: Activity
-  private val view: FlutterView
-  private val cameraManager: CameraManager
 
-  private val channel: MethodChannel
+/** QrScanPlugin */
+class QrScanPlugin: FlutterPlugin, ActivityAware, MethodCallHandler {
+  // Needs to be an app-defined int constant. This value is the hex representation (first 8 digits) of "qrscan".
+  // It defines the type of permission request. It will be used at the callback to check, which type of request it was.
+  val cameraRequestId = 71727363
 
+  val barcodeValueTypes = listOf("unknown", "contact", "email", "isbn", "phone", "product", "sms", "text", "url", "wifi", "geo", "event", "license")
+
+  private var cameraManager: CameraManager ?= null
   var cameraPermissionCallback: Runnable ?= null
 
-  constructor(registrar: Registrar, channel: MethodChannel) {
-    this.registrar = registrar
-    this.view = registrar.view()
-    this.activity = registrar.activity()
-    this.cameraManager = this.activity.getSystemService(Context.CAMERA_SERVICE) as CameraManager
+  private var channel: MethodChannel ?= null
+  private var activity: Activity ?= null
+  private var renderer: FlutterRenderer ?= null
 
+  override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
+    println("onAttachedToEngine")
+    @Suppress("DEPRECATION")
+    val channel = MethodChannel(flutterPluginBinding.flutterEngine.dartExecutor, "qr_scan")
     this.channel = channel
-
-    // Add our permissionRequestListener.
-    registrar.addRequestPermissionsResultListener(QrScanCameraPermissionRequestListener())
+    @Suppress("DEPRECATION")
+    this.renderer = flutterPluginBinding.flutterEngine.renderer
+    channel.setMethodCallHandler(QrScanPlugin())
   }
 
-  // Static variables and methods.
+  override fun onAttachedToActivity(binding: ActivityPluginBinding) {
+    this.activity = binding.activity
+  }
+
+  override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
+    this.activity = binding.activity
+  }
+
+  // This static function is optional and equivalent to onAttachedToEngine. It supports the old
+  // pre-Flutter-1.12 Android projects. You are encouraged to continue supporting
+  // plugin registration via this function while apps migrate to use the new Android APIs
+  // post-flutter-1.12 via https://flutter.dev/go/android-project-migration.
+  //
+  // It is encouraged to share logic between onAttachedToEngine and registerWith to keep
+  // them functionally equivalent. Only one of onAttachedToEngine or registerWith will be called
+  // depending on the user's project. onAttachedToEngine or registerWith must both be defined
+  // in the same class.
   companion object {
-    // Needs to be an app-defined int constant. This value is the hex representation (first 8 digits) of "qrscan".
-    // It defines the type of permission request. It will be used at the callback to check, which type of request it was.
-    const val CAMERA_REQUEST_ID = 71727363
-
-    val barcodeValueTypes = listOf("unknown", "contact", "email", "isbn", "phone", "product", "sms", "text", "url", "wifi", "geo", "event", "license")
-
     @JvmStatic
+    @Suppress("UNUSED")
     fun registerWith(registrar: Registrar) {
-      // Prepare the method-channel and initialize the plugin.
-      val channel = MethodChannel(registrar.messenger(), "io.cloudacy.qr_scan")
-      channel.setMethodCallHandler(QrScanPlugin(registrar, channel))
+      println("register")
+      val channel = MethodChannel(registrar.messenger(), "qr_scan")
+      val plugin = QrScanPlugin()
+      plugin.channel = channel
+      channel.setMethodCallHandler(plugin)
     }
   }
 
-  inner class QrScanCameraPermissionRequestListener : RequestPermissionsResultListener {
+  inner class QrScanCameraPermissionRequestListener : PluginRegistry.RequestPermissionsResultListener {
     override fun onRequestPermissionsResult(requestId: Int, permissions: Array<out String>?, grantResults: IntArray?): Boolean {
       // Check if the permission was set for this plugin.
-      if (requestId == CAMERA_REQUEST_ID) {
+      if (requestId == cameraRequestId) {
         // Execute the callback to continue to open the camera.
         cameraPermissionCallback?.run()
         return true
@@ -76,26 +98,51 @@ class QrScanPlugin : MethodCallHandler {
   }
 
   private fun checkCameraPermission(): Boolean {
+    println("check camera permission")
+    val activity = this.activity ?: return false
+println("perm check")
     return ContextCompat.checkSelfPermission(activity, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
   }
 
-  private fun requestCameraPermission() {
+  private fun requestCameraPermission(): Boolean {
+    val activity = this.activity ?: return false
+
     // check if an explanation has to be shown
 
     //if (ActivityCompat.shouldShowRequestPermissionRationale(activity, Manifest.permission.CAMERA)) {
-      // Show an explanation.
+    // Show an explanation.
 
-      // Request the permission.
+    // Request the permission.
     //} else {
-      // No explanation required. We can now request the permission.
+    // No explanation required. We can now request the permission.
 
-      //var permissionResult
-      ActivityCompat.requestPermissions(activity, arrayOf(Manifest.permission.CAMERA), CAMERA_REQUEST_ID)
+    //var permissionResult
+    ActivityCompat.requestPermissions(activity, arrayOf(Manifest.permission.CAMERA), cameraRequestId)
     //}
+
+    return true
   }
 
   private fun openCamera(cameraId: String, result: Result) {
-    val textureEntry = view.createSurfaceTexture()
+    val channel = this.channel
+    if (channel == null) {
+      result.error("ERR_CHANNEL_NOT_INITIALIZED", "The channel instance is not set!", null)
+      return
+    }
+
+    val renderer = this.renderer
+    if (renderer == null) {
+      result.error("ERR_RENDERER_NOT_INITIALIZED", "The renderer instance is not set!", null)
+      return
+    }
+
+    val cameraManager = this.cameraManager
+    if (cameraManager == null) {
+      result.error("ERR_CAMERA_MANAGER_NOT_INITIALIZED", "The cameraManager instance is not set!", null)
+      return
+    }
+
+    val textureEntry = renderer.createSurfaceTexture()
 
     cameraManager.openCamera(cameraId, object : CameraDevice.StateCallback() {
       override fun onOpened(cameraDevice: CameraDevice) {
@@ -259,6 +306,12 @@ class QrScanPlugin : MethodCallHandler {
       return
     }
 
+    val cameraManager = this.cameraManager
+    if (cameraManager == null) {
+      result.error("ERR_CAMERA_MANAGER_NOT_INITIALIZED", "The cameraManager instance is not set!", null)
+      return
+    }
+
     try {
       val cameraIds = cameraManager.cameraIdList
       val cameras = mutableListOf<Map<String, Any>>()
@@ -268,7 +321,7 @@ class QrScanPlugin : MethodCallHandler {
         val cameraCharacteristics = cameraManager.getCameraCharacteristics(cameraId)
 
         cameraDetails["id"] = cameraId
-        cameraDetails["orientation"] = cameraCharacteristics.get(CameraCharacteristics.SENSOR_ORIENTATION)
+        cameraDetails["orientation"] = cameraCharacteristics.get(CameraCharacteristics.SENSOR_ORIENTATION) as Any
 
         when (cameraCharacteristics.get(CameraCharacteristics.LENS_FACING)) {
           CameraMetadata.LENS_FACING_FRONT -> cameraDetails["lensFacing"] = "front"
@@ -285,17 +338,30 @@ class QrScanPlugin : MethodCallHandler {
     }
   }
 
-  override fun onMethodCall(call: MethodCall, result: Result) {
+  override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
+    println(call.method)
+    result.success("test")
+    return
     when (call.method) {
       "initialize" -> {
         initialize(call, result)
       }
       "availableCameras" -> {
-        getAvailableCameras(result)
+        result.success("test")
+        //getAvailableCameras(result)
       }
       else -> {
         result.notImplemented()
       }
     }
+  }
+
+  override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
+  }
+
+  override fun onDetachedFromActivity() {
+  }
+
+  override fun onDetachedFromActivityForConfigChanges() {
   }
 }
