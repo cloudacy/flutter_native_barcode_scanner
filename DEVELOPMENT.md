@@ -1,6 +1,7 @@
 ## android specific
 
 - https://developers.google.com/ml-kit/vision/barcode-scanning/android#kotlin
+- https://developer.android.com/training/camerax
 
 ### iOS specific
 
