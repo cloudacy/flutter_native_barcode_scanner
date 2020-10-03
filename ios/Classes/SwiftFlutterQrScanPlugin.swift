@@ -12,7 +12,7 @@ protocol FrameExtractorDelegate: class {
 }
 
 public class QrCam: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, AVCaptureMetadataOutputObjectsDelegate, FlutterTexture {
-    
+
     private let position = AVCaptureDevice.Position.back
     private let quality = AVCaptureSession.Preset.medium
 
@@ -132,7 +132,7 @@ public class QrCam: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, AVCa
             }
 
             print("qr code found: " + stringValue)
-            methodChannel?.invokeMethod("code", arguments: stringValue)
+            methodChannel?.invokeMethod("barcode", arguments: stringValue)
         }
     }
 
@@ -164,7 +164,7 @@ public class SwiftQrScanPlugin: NSObject, FlutterPlugin {
     }
 
     public class func register(with registrar: FlutterPluginRegistrar) {
-        let channel = FlutterMethodChannel(name: "io.cloudacy.qr_scan", binaryMessenger: registrar.messenger())
+        let channel = FlutterMethodChannel(name: "io.cloudacy.flutter_qr_scan", binaryMessenger: registrar.messenger())
         let instance = SwiftQrScanPlugin(registry: registrar.textures(), messenger: registrar.messenger(), methodChannel: channel)
 
         registrar.addMethodCallDelegate(instance, channel: channel)
@@ -173,7 +173,7 @@ public class SwiftQrScanPlugin: NSObject, FlutterPlugin {
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
 
         if dispatchQueue == nil {
-            dispatchQueue = DispatchQueue(label: "io.cloudacy.qr_scan.dispathQueue")
+            dispatchQueue = DispatchQueue(label: "io.cloudacy.flutter_qr_scan.dispathQueue")
         }
 
         // Invoke the plugin on another dispatch queue to avoid blocking the UI.
@@ -187,7 +187,7 @@ public class SwiftQrScanPlugin: NSObject, FlutterPlugin {
         case "availableCameras":
             result(findAvailableCameras())
             break
-        case "initialize":
+        case "start":
             initializeQrScanner(call: call, result: result)
             break
 //        case "init":

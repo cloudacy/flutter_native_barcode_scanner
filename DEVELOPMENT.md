@@ -1,8 +1,6 @@
-## Development links
+## android specific
 
-- https://flutter.dev/docs/development/packages-and-plugins/developing-packages
-- https://flutter.dev/docs/development/platform-integration/platform-channels
-- https://github.com/flutter/plugins/tree/master/packages/camera
+- https://developers.google.com/ml-kit/vision/barcode-scanning/android#kotlin
 
 ### iOS specific
 

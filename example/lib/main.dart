@@ -1,8 +1,9 @@
-import 'package:flutter/material.dart';
+import 'dart:async';
 
+import 'package:flutter/material.dart';
 import 'package:flutter_qr_scan/flutter_qr_scan.dart';
 
-Future<Null> main() async {
+void main() {
   runApp(MyApp());
 }
 
@@ -12,45 +13,39 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  QrScanController controller;
-
-  Future<List<QrScanCamera>> camerasFuture = FlutterQrScan.getCameras();
+  int textureId;
+  String barcodeData;
 
   @override
   void initState() {
     super.initState();
-  }
+    startCamera().then((value) {
+      FlutterQrScan.setListener((data) {
+        setState(() {
+          this.barcodeData = data;
+          this.textureId = null;
+        });
 
-  @override
-  void dispose() {
-    if (controller != null) controller.dispose();
-    super.dispose();
-  }
-
-  void initController(QrScanCamera camera) {
-    // Create a new QrScanController and pass the selected camera to it.
-    // Also add the onCode callback, which holds the value from detected barcodes.
-    controller = QrScanController(
-      camera: camera,
-      formats: [QrScanCodeFormat.qr],
-      resolution: QrScanResolution.medium,
-      onCode: onCode,
-    );
-
-    // Update the state, if the controller value changes.
-    controller.addListener(() {
-      print('update state');
-      if (mounted) setState(() {});
+        FlutterQrScan.stop();
+      });
     });
-
-    // Initialize QrScan.
-    print('initializing ...');
-    controller.initialize();
   }
 
-  void onCode(dynamic value) {
-    print('onCode');
-    print(value);
+  Future<void> startCamera() async {
+    try {
+      final result = await FlutterQrScan.start();
+      print('got: $result');
+      // If the widget was removed from the tree while the asynchronous platform
+      // message was in flight, we want to discard the reply rather than calling
+      // setState to update our non-existent appearance.
+      if (!mounted) return;
+
+      setState(() {
+        this.textureId = result['textureId'];
+      });
+    } catch (e) {
+      print(e);
+    }
   }
 
   @override
@@ -60,41 +55,17 @@ class _MyAppState extends State<MyApp> {
         appBar: AppBar(
           title: const Text('Plugin example app'),
         ),
-        body: FutureBuilder(
-          future: camerasFuture,
-          builder: (BuildContext context, AsyncSnapshot<List<QrScanCamera>> data) {
-            if (data.connectionState != ConnectionState.done) {
-              return Center(child: CircularProgressIndicator());
-            }
-
-            if (data.hasError || !data.hasData) {
-              return Center(
-                child: const Text(
-                  'Unable to fetch available cameras.',
-                  style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+        body: Center(
+          child: Column(
+            children: [
+              if (textureId != null)
+                AspectRatio(
+                  aspectRatio: 1,
+                  child: Texture(textureId: textureId),
                 ),
-              );
-            }
-
-            List<QrScanCamera> cameras = data.data;
-
-            if (cameras.length == 0) {
-              return Center(
-                child: const Text(
-                  'No cameras available.',
-                  style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
-                ),
-              );
-            }
-
-            if (controller == null) {
-              initController(cameras[0]);
-            }
-
-            return Center(
-              child: FlutterQrScan(controller: controller),
-            );
-          },
+              if (barcodeData != null) Text(barcodeData)
+            ],
+          ),
         ),
       ),
     );
