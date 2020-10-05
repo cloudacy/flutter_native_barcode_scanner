@@ -66,6 +66,9 @@ class FlutterQrScanPlugin(): FlutterPlugin, MethodCallHandler, ActivityAware, Pl
 
   override fun onAttachedToActivity(binding: ActivityPluginBinding) {
     activity = binding.activity
+
+    // register this class as a RequestPermissionResultListener such that onRequestPermissionResult will be called.
+    binding.addRequestPermissionsResultListener(this)
   }
 
   override fun onDetachedFromActivityForConfigChanges() {
@@ -74,6 +77,9 @@ class FlutterQrScanPlugin(): FlutterPlugin, MethodCallHandler, ActivityAware, Pl
 
   override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
     activity = binding.activity
+
+    // register this class as a RequestPermissionResultListener such that onRequestPermissionResult will be called.
+    binding.addRequestPermissionsResultListener(this)
   }
 
   override fun onDetachedFromActivity() {
