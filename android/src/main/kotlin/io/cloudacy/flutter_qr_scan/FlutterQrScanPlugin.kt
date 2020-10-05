@@ -84,8 +84,9 @@ class FlutterQrScanPlugin(): FlutterPlugin, MethodCallHandler, ActivityAware, Pl
 
   override fun onDetachedFromActivity() {
     activity = null
-    println("SHUTDOWN_CAMERA_EXECUTOR")
-    cameraExecutor?.shutdown()
+
+    // stop all use cases for this plugin.
+    cameraProvider?.unbindAll()
   }
 
   override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>?, grantResults: IntArray?): Boolean {
