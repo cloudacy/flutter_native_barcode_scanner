@@ -145,7 +145,7 @@ public class QrCam: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, AVCa
     }
 }
 
-public class SwiftQrScanPlugin: NSObject, FlutterPlugin {
+public class SwiftFlutterQrScanPlugin: NSObject, FlutterPlugin {
     private var dispatchQueue: DispatchQueue?
 
     private(set) var registry: FlutterTextureRegistry
@@ -164,8 +164,8 @@ public class SwiftQrScanPlugin: NSObject, FlutterPlugin {
     }
 
     public class func register(with registrar: FlutterPluginRegistrar) {
-        let channel = FlutterMethodChannel(name: "io.cloudacy.flutter_qr_scan", binaryMessenger: registrar.messenger())
-        let instance = SwiftQrScanPlugin(registry: registrar.textures(), messenger: registrar.messenger(), methodChannel: channel)
+        let channel = FlutterMethodChannel(name: "flutter_qr_scan", binaryMessenger: registrar.messenger())
+        let instance = SwiftFlutterQrScanPlugin(registry: registrar.textures(), messenger: registrar.messenger(), methodChannel: channel)
 
         registrar.addMethodCallDelegate(instance, channel: channel)
     }
@@ -173,34 +173,36 @@ public class SwiftQrScanPlugin: NSObject, FlutterPlugin {
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
 
         if dispatchQueue == nil {
-            dispatchQueue = DispatchQueue(label: "io.cloudacy.flutter_qr_scan.dispathQueue")
+            dispatchQueue = DispatchQueue(label: "io.cloudacy.flutter_qr_scan.dispatchQueue")
         }
-
-        // Invoke the plugin on another dispatch queue to avoid blocking the UI.
-        dispatchQueue?.async(execute: {
-            self.handleMethodCallAsync(call, result: result)
-        })
-    }
-
-    func handleMethodCallAsync(_ call: FlutterMethodCall, result: FlutterResult) {
+      
         switch call.method {
         case "availableCameras":
             result(findAvailableCameras())
             break
         case "start":
-            initializeQrScanner(call: call, result: result)
+//            initializeQrScanner(call: call, result: result)
             break
-//        case "init":
-//            reset()
-//            result(nil)
-//            break
-//        case "startScanning":
-//            camera!.startScanning()
-//            break
+  //        case "init":
+  //            reset()
+  //            result(nil)
+  //            break
+  //        case "startScanning":
+  //            camera!.startScanning()
+  //            break
         default:
             result(FlutterError(code: "InvalidMethod", message: "Invalid method \(call.method)!", details: nil))
             break
         }
+
+        // Invoke the plugin on another dispatch queue to avoid blocking the UI.
+//        dispatchQueue?.async(execute: {
+//            self.handleMethodCallAsync(call, result: result)
+//        })
+    }
+
+    func handleMethodCallAsync(_ call: FlutterMethodCall, result: FlutterResult) {
+        
     }
 
 //    public func reset() {
@@ -278,7 +280,7 @@ public class SwiftQrScanPlugin: NSObject, FlutterPlugin {
 }
 
 
-extension SwiftQrScanPlugin: AVCaptureMetadataOutputObjectsDelegate {
+extension SwiftFlutterQrScanPlugin: AVCaptureMetadataOutputObjectsDelegate {
     public func metadataOutput(_ output: AVCaptureMetadataOutput, didOutput metadataObjects: [AVMetadataObject], from connection: AVCaptureConnection) {
         if let metadataObject = metadataObjects.first {
             guard let readableObject = metadataObject as? AVMetadataMachineReadableCodeObject else {
