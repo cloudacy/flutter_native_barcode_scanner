@@ -34,24 +34,17 @@ import java.util.concurrent.Executors
 
 /** FlutterQrScanPlugin */
 class FlutterQrScanPlugin(): FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry.RequestPermissionsResultListener {
-  /// The MethodChannel that will the communication between Flutter and native Android
-  ///
-  /// This local reference serves to register the plugin with the Flutter Engine and unregister it
-  /// when the Flutter Engine is detached from the Activity
   private lateinit var channel : MethodChannel
-
   private var activity : Activity? = null
-
-  private var textureRegistry: TextureRegistry? = null
+  private lateinit var textureRegistry: TextureRegistry
 
   // Needs to be an app-defined int constant. This value is the hex representation of "fqrs".
   // It defines the type of permission request. It will be used at the callback to check, which type of request it was.
   private val cameraPermissionRequestCode = 66717273
+  private var requestCameraPermissionResult: Result? = null
 
   private var cameraProvider: ProcessCameraProvider? = null
   private var cameraExecutor: ExecutorService? = null
-
-  private var requestCameraPermissionResult: Result? = null
 
   override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
     channel = MethodChannel(flutterPluginBinding.binaryMessenger, "flutter_qr_scan")
@@ -90,16 +83,13 @@ class FlutterQrScanPlugin(): FlutterPlugin, MethodCallHandler, ActivityAware, Pl
   }
 
   override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>?, grantResults: IntArray?): Boolean {
-    print("permissions: $requestCode")
     if (requestCode == cameraPermissionRequestCode) {
       val grantResults = grantResults ?: return false
-      println("permissions: $grantResults")
       if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
         val requestCameraPermissionResult = requestCameraPermissionResult ?: return false
         start(requestCameraPermissionResult)
         return true
       }
-      println("CAMERA_PERMISSION_DENIED")
     }
     return false
   }
@@ -129,15 +119,12 @@ class FlutterQrScanPlugin(): FlutterPlugin, MethodCallHandler, ActivityAware, Pl
       barcodeScanner.process(image)
         .addOnSuccessListener {
           if (it.isNotEmpty()) listener(it[0])
-          println("barcode scan success: $it")
           imageProxy.close()
         }
         .addOnFailureListener {
-          println("barcode scan failed: $it")
           imageProxy.close()
         }
         .addOnCanceledListener {
-          println("barcode scan canceled")
           imageProxy.close()
         }
     }
@@ -145,9 +132,10 @@ class FlutterQrScanPlugin(): FlutterPlugin, MethodCallHandler, ActivityAware, Pl
 
   private fun start(result: Result): String {
     if (!checkCameraPermission()) {
+      // store the current result object for later use. (when user accepted or denied access)
       requestCameraPermissionResult = result
       requestCameraPermission()
-      println("WAITING_FOR_PERMISSION")
+
       return "WAITING_FOR_PERMISSION"
     }
 
@@ -159,13 +147,15 @@ class FlutterQrScanPlugin(): FlutterPlugin, MethodCallHandler, ActivityAware, Pl
 
     startCamera(result)
 
-    println("INITIALIZED")
     return "INITIALIZED"
   }
 
   private fun stop(result: Result) {
     val cameraProvider = cameraProvider ?: return
+
+    // stop all use cases for this plugin.
     cameraProvider.unbindAll()
+
     result.success(true)
   }
 
@@ -182,7 +172,6 @@ class FlutterQrScanPlugin(): FlutterPlugin, MethodCallHandler, ActivityAware, Pl
 
   private fun startCamera(result: Result) {
     val activity = activity ?: return
-    val textureRegistry = textureRegistry ?: return
     val cameraExecutor = cameraExecutor ?: return
 
     val cameraProviderFuture = ProcessCameraProvider.getInstance(activity.baseContext)
@@ -214,7 +203,6 @@ class FlutterQrScanPlugin(): FlutterPlugin, MethodCallHandler, ActivityAware, Pl
         .build()
         .also {
           it.setAnalyzer(cameraExecutor, BarcodeAnalyzer { barcode ->
-            println("found barcode $barcode")
             channel.invokeMethod("code", barcode.rawValue)
           })
         }
