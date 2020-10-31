@@ -38,9 +38,9 @@ class FlutterQrScanPlugin(): FlutterPlugin, MethodCallHandler, ActivityAware, Pl
   private var activity : Activity? = null
   private lateinit var textureRegistry: TextureRegistry
 
-  // Needs to be an app-defined int constant. This value is the hex representation of "fqrs".
+  // Needs to be an app-defined int constant. This value is the hex representation of "QRS" with one bit cut of to only use lower 16 bit (if used in a android.support.v4.app.FragmentActivity) as required.
   // It defines the type of permission request. It will be used at the callback to check, which type of request it was.
-  private val cameraPermissionRequestCode = 66717273
+  private val cameraPermissionRequestCode = 51525
   private var requestCameraPermissionResult: Result? = null
 
   private var cameraProvider: ProcessCameraProvider? = null
