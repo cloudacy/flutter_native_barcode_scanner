@@ -38,9 +38,10 @@ print('Updated pubspec.yaml! Running "flutter pub get" to update other files.')
 
 subprocess.run(['flutter', 'pub', 'get'])
 
-print('Staging pubspec.yaml ...')
+print('Staging pubspec.yaml and example/pubspec.lock ...')
 
 subprocess.run(['git', 'add', 'pubspec.yaml'])
+subprocess.run(['git', 'add', 'example/pubspec.lock'])
 
 print('Creating version commit and tag ...')
 
