@@ -9,9 +9,8 @@ version = ''
 # read the current version number
 with open('pubspec.yaml', 'r') as pubspec:
     pubspecRawContent = pubspec.read()
-    match = re.search(r'version: (\d+\.\d+\.\d+)\+(\d+)', pubspecRawContent)
+    match = re.search(r'version: (\d+\.\d+\.\d+)', pubspecRawContent)
     version = match.group(1)
-    buildNumber = int(match.group(2))
 
 # Ask for a new version number
 newVersion = input('New version number: [%s] ' % (version))
