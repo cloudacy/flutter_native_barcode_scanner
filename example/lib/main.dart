@@ -19,33 +19,35 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    startCamera().then((value) {
-      FlutterQrScan.setListener((data) {
-        setState(() {
-          this.barcodeData = data;
-          this.textureId = null;
-        });
 
-        FlutterQrScan.stop();
-      });
-    });
+    _scanQRCode();
   }
 
-  Future<void> startCamera() async {
-    try {
-      final result = await FlutterQrScan.start();
-      print('got: $result');
-      // If the widget was removed from the tree while the asynchronous platform
-      // message was in flight, we want to discard the reply rather than calling
-      // setState to update our non-existent appearance.
-      if (!mounted) return;
+  Future<void> _scanQRCode() async {
+    // Start the QR Scan.
+    final startResult = await FlutterQrScan.start();
+    print('start: $startResult');
 
-      setState(() {
-        this.textureId = result['textureId'];
-      });
-    } catch (e) {
-      print(e);
-    }
+    // Set the textureId to the value, returned from the "start" function.
+    setState(() {
+      this.textureId = startResult['textureId'];
+    });
+
+    // Get the QR code stream.
+    final codeStream = FlutterQrScan.getCodeStream();
+
+    // Wait until the first QR code comes in.
+    final data = await codeStream.first;
+
+    // Set the barcode data and set textureId to null to stop the scan.
+    setState(() {
+      this.barcodeData = data;
+      this.textureId = null;
+    });
+
+    // Stop the QR code scan process.
+    final stopResult = await FlutterQrScan.stop();
+    print('stop: $stopResult');
   }
 
   @override
