@@ -27,7 +27,7 @@ else:
     exit(1)
 
 # place the new version combination to the pubspecRawContent string
-pubspecRawContent = re.sub(r'version: (\d+\.\d+\.\d+)', 'version: %s+%s' %
+pubspecRawContent = re.sub(r'version: (\d+\.\d+\.\d+)', 'version: %s' %
                            (newVersion), pubspecRawContent)
 
 # write the updated pubspec content to the pubspec.yaml file
