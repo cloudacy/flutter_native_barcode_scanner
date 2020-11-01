@@ -68,7 +68,6 @@ public class QrCam: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, AVCa
     captureSession.addOutput(videoOutput)
     captureSession.addOutput(metadataOutput)
     
-    
     // configure metadataOutput
     
     // support qr codes
@@ -145,9 +144,6 @@ public class SwiftFlutterQrScanPlugin: NSObject, FlutterPlugin {
     }
     
     switch call.method {
-    case "availableCameras":
-      result(findAvailableCameras())
-      break
     case "start":
       initializeQrScanner(call: call, result: result)
       break
@@ -177,34 +173,7 @@ public class SwiftFlutterQrScanPlugin: NSObject, FlutterPlugin {
     
     result(resultObject)
   }
-
-  public func findAvailableCameras() -> [[String: String]] {
-    let discoverySession = AVCaptureDevice.DiscoverySession(deviceTypes: [.builtInWideAngleCamera], mediaType: .video, position: .unspecified)
-    let devices = discoverySession.devices
-    var reply: [[String : String]] = []
-    
-    for device in devices {
-      var lensFacing = ""
-      switch device.position {
-      case .back:
-        lensFacing = "back"
-      case .front:
-        lensFacing = "front"
-      case .unspecified:
-        lensFacing = "external"
-      @unknown default:
-        continue
-      }
-      reply.append(["id": device.uniqueID, "lensFacing": lensFacing])
-    }
-    
-    return reply
   }
-
-  public func findCameraDevice() -> AVCaptureDevice? {
-    return AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back)
-  }
-}
 
 
 @available(iOS 10.0, *)
