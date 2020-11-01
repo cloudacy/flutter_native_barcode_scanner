@@ -74,6 +74,10 @@ public class QrCam: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, AVCa
     metadataOutput.setMetadataObjectsDelegate(self, queue: DispatchQueue(label: "sample buffer"))
     metadataOutput.metadataObjectTypes = [.qr, .ean8, .ean13, .code39, .code93, .code128, .pdf417, .upce, .dataMatrix]
     captureSession.commitConfiguration()
+    
+    // fix orientation
+    guard let connection = videoOutput.connection(with: AVFoundation.AVMediaType.video) else { return }
+    connection.videoOrientation = .portrait
   }
 
   public func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
