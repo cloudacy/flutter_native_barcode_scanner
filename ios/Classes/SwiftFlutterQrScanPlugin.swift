@@ -15,6 +15,8 @@ public class QrCam: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, AVCa
   var onFrameAvailable: (() -> Void)?
   var methodChannel: FlutterMethodChannel?
   
+  private var videoDevice: AVCaptureDevice
+  private var videoDeviceInput: AVCaptureDeviceInput
   private var videoOutput = AVCaptureVideoDataOutput()
   private var metadataOutput = AVCaptureMetadataOutput()
   private var feedbackGenerator = UINotificationFeedbackGenerator()
@@ -22,9 +24,17 @@ public class QrCam: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, AVCa
   private var queue = DispatchQueue(label: "io.cloudacy.flutter_qr_scan")
   
   public init(methodChannel: FlutterMethodChannel) {
+    self.videoDevice = AVCaptureDevice.default(for: .video)!
+    self.videoDeviceInput = try! AVCaptureDeviceInput(device: videoDevice)
+    self.methodChannel = methodChannel
+
     super.init()
     
-    self.methodChannel = methodChannel
+    videoOutput.setSampleBufferDelegate(self, queue: queue)
+    
+    // fix orientation
+    guard let connection = videoOutput.connection(with: AVFoundation.AVMediaType.video) else { return }
+    connection.videoOrientation = .portrait
   }
   
   public func startScanning() {
@@ -42,28 +52,20 @@ public class QrCam: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, AVCa
   private func configureSession() {
     captureSession.beginConfiguration()
     captureSession.sessionPreset = quality
-    guard let videoDevice = AVCaptureDevice.default(for: .video) else {return}
-    guard
-      let videoDeviceInput = try? AVCaptureDeviceInput(device: videoDevice),
-      captureSession.canAddInput(videoDeviceInput)
+    
+    guard captureSession.canAddInput(videoDeviceInput)
     else { return }
     captureSession.addInput(videoDeviceInput)
-  
-    videoOutput.setSampleBufferDelegate(self, queue: queue)
+    
     guard captureSession.canAddOutput(videoOutput) else { return }
     captureSession.addOutput(videoOutput)
     captureSession.addOutput(metadataOutput)
     
-    // configure metadataOutput
-    
     // support qr codes
     metadataOutput.setMetadataObjectsDelegate(self, queue: queue)
     metadataOutput.metadataObjectTypes = [.qr, .ean8, .ean13, .code39, .code93, .code128, .pdf417, .upce, .dataMatrix]
-    captureSession.commitConfiguration()
     
-    // fix orientation
-    guard let connection = videoOutput.connection(with: AVFoundation.AVMediaType.video) else { return }
-    connection.videoOrientation = .portrait
+    captureSession.commitConfiguration()
   }
 
   public func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
