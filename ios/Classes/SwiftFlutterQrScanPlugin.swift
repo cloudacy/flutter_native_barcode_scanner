@@ -15,8 +15,6 @@ public class QrCam: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, AVCa
   var onFrameAvailable: (() -> Void)?
   var methodChannel: FlutterMethodChannel?
   
-  private var videoDevice: AVCaptureDevice
-  private var videoDeviceInput: AVCaptureDeviceInput
   private var videoOutput = AVCaptureVideoDataOutput()
   private var metadataOutput = AVCaptureMetadataOutput()
   private var feedbackGenerator = UINotificationFeedbackGenerator()
@@ -24,8 +22,8 @@ public class QrCam: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, AVCa
   private var queue = DispatchQueue(label: "io.cloudacy.flutter_qr_scan")
   
   public init(methodChannel: FlutterMethodChannel) {
-    self.videoDevice = AVCaptureDevice.default(for: .video)!
-    self.videoDeviceInput = try! AVCaptureDeviceInput(device: videoDevice)
+    
+    
     self.methodChannel = methodChannel
 
     super.init()
@@ -52,6 +50,16 @@ public class QrCam: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, AVCa
   private func configureSession() {
     captureSession.beginConfiguration()
     captureSession.sessionPreset = quality
+    
+    guard let videoDevice = AVCaptureDevice.default(for: .video) else {
+      captureSession.commitConfiguration()
+      return
+    }
+    
+    guard let videoDeviceInput = try? AVCaptureDeviceInput(device: videoDevice) else {
+      captureSession.commitConfiguration()
+      return
+    }
     
     guard captureSession.canAddInput(videoDeviceInput)
     else { return }
