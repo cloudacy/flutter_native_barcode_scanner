@@ -14,6 +14,10 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   int textureId;
+
+  double previewWidth;
+  double previewHeight;
+
   String barcodeData;
 
   @override
@@ -31,6 +35,8 @@ class _MyAppState extends State<MyApp> {
     // Set the textureId to the value, returned from the "start" function.
     setState(() {
       this.textureId = startResult['textureId'];
+      this.previewWidth = (startResult['previewWidth'] as num).toDouble() ?? 1920;
+      this.previewHeight = (startResult['previewHeight'] as num).toDouble() ?? 1080;
     });
 
     // Get the QR code stream.
@@ -62,7 +68,7 @@ class _MyAppState extends State<MyApp> {
             children: [
               if (textureId != null)
                 AspectRatio(
-                  aspectRatio: 1,
+                  aspectRatio: previewWidth / previewHeight,
                   child: Texture(textureId: textureId),
                 ),
               if (barcodeData != null) Text(barcodeData)
