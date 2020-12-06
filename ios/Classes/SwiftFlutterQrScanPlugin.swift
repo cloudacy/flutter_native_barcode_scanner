@@ -9,21 +9,27 @@ public enum CaptureDeviceError : Error {
 }
 
 @available(iOS 10.0, *)
-public class QrCam: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, AVCaptureMetadataOutputObjectsDelegate, FlutterTexture {
-  public let captureSession = AVCaptureSession()
+public class QrCam:
+  NSObject,
+  AVCaptureVideoDataOutputSampleBufferDelegate,
+  AVCaptureMetadataOutputObjectsDelegate,
+  FlutterTexture
+{
+  public  let captureSession = AVCaptureSession()
   
   private let quality = AVCaptureSession.Preset.medium
   private var pixelBuffer: CVPixelBuffer?
   
-  private(set) var previewSize = CGSize(width: 1920, height: 1080)
-  var onFrameAvailable: (() -> Void)?
-  var methodChannel: FlutterMethodChannel?
+  public  var orientationObserver: NSObjectProtocol?
+  public  var previewSize = CGSize(width: 1920, height: 1080)
+  public  var onFrameAvailable: (() -> Void)?
+  public  var methodChannel: FlutterMethodChannel?
   
-  private var videoOutput = AVCaptureVideoDataOutput()
-  private var metadataOutput = AVCaptureMetadataOutput()
-  private var feedbackGenerator = UINotificationFeedbackGenerator()
+  private let videoOutput = AVCaptureVideoDataOutput()
+  private let metadataOutput = AVCaptureMetadataOutput()
+  private let feedbackGenerator = UINotificationFeedbackGenerator()
   
-  private var queue = DispatchQueue(label: "io.cloudacy.flutter_qr_scan")
+  private let queue = DispatchQueue(label: "io.cloudacy.flutter_qr_scan")
   
   public init(methodChannel: FlutterMethodChannel) {
     self.methodChannel = methodChannel
@@ -31,10 +37,6 @@ public class QrCam: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, AVCa
     super.init()
     
     videoOutput.setSampleBufferDelegate(self, queue: queue)
-    
-    // fix orientation
-    guard let connection = videoOutput.connection(with: AVFoundation.AVMediaType.video) else { return }
-    connection.videoOrientation = .portrait
   }
   
   public func startScanning(
@@ -48,6 +50,28 @@ public class QrCam: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, AVCa
         completion(.success(true))
       } else {
         completion(.failure(.access))
+      }
+    }
+  }
+  
+  private func changeVideoOutputOrientation() {
+    if let connection = videoOutput.connection(with: AVFoundation.AVMediaType.video) {
+      switch UIDevice.current.orientation {
+      case .portrait:
+        connection.videoOrientation = .portrait
+        break
+      case .portraitUpsideDown:
+        connection.videoOrientation = .portraitUpsideDown
+        break
+      case .landscapeLeft:
+        connection.videoOrientation = .landscapeRight
+        break
+      case .landscapeRight:
+        connection.videoOrientation = .landscapeLeft
+        break
+      default:
+        // Do nothing.
+        break
       }
     }
   }
@@ -69,13 +93,26 @@ public class QrCam: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, AVCa
       return
     }
     
-    guard captureSession.canAddInput(videoDeviceInput)
-    else { return }
-    captureSession.addInput(videoDeviceInput)
+    if captureSession.canAddInput(videoDeviceInput) {
+      captureSession.addInput(videoDeviceInput)
+    }
     
-    guard captureSession.canAddOutput(videoOutput) else { return }
-    captureSession.addOutput(videoOutput)
-    captureSession.addOutput(metadataOutput)
+    if captureSession.canAddOutput(videoOutput) {
+      captureSession.addOutput(videoOutput)
+      
+      orientationObserver = NotificationCenter.default.addObserver(
+        forName: UIDevice.orientationDidChangeNotification,
+        object: nil, queue: nil
+      ) { _ in
+        self.changeVideoOutputOrientation()
+      }
+      
+      changeVideoOutputOrientation()
+    }
+    
+    if captureSession.canAddOutput(metadataOutput) {
+      captureSession.addOutput(metadataOutput)
+    }
     
     // support qr codes
     metadataOutput.setMetadataObjectsDelegate(self, queue: queue)
@@ -84,11 +121,15 @@ public class QrCam: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, AVCa
     captureSession.commitConfiguration()
   }
 
-  public func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
+  public func captureOutput(
+    _ output: AVCaptureOutput,
+    didOutput sampleBuffer: CMSampleBuffer,
+    from connection: AVCaptureConnection
+  ) {
     pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer)
     
-      onFrameAvailable?()
-    }
+    onFrameAvailable?()
+  }
 
   public func metadataOutput(
     _ output: AVCaptureMetadataOutput,
@@ -151,7 +192,13 @@ public class SwiftFlutterQrScanPlugin: NSObject, FlutterPlugin {
       initializeQrScanner(call: call, result: result)
       break
     case "stop":
+      // Remove the orientation observer.
+      if let observer = cam.orientationObserver {
+        NotificationCenter.default.removeObserver(observer, name: UIDevice.orientationDidChangeNotification, object: nil)
+      }
+      
       cam.captureSession.stopRunning()
+      
       result(true)
       break
     default:
