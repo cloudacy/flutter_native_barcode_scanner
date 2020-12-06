@@ -63,9 +63,11 @@ public class QrCam:
       case .portraitUpsideDown:
         connection.videoOrientation = .portraitUpsideDown
         break
+      // TODO: Find out why this has to be flipped.
       case .landscapeLeft:
         connection.videoOrientation = .landscapeRight
         break
+      // TODO: Find out why this has to be flipped.
       case .landscapeRight:
         connection.videoOrientation = .landscapeLeft
         break
@@ -84,9 +86,6 @@ public class QrCam:
       captureSession.commitConfiguration()
       return
     }
-    
-    let dims = CMVideoFormatDescriptionGetDimensions(videoDevice.activeFormat.formatDescription)
-    previewSize = CGSize(width: CGFloat(dims.width), height: CGFloat(dims.height))
     
     guard let videoDeviceInput = try? AVCaptureDeviceInput(device: videoDevice) else {
       captureSession.commitConfiguration()
@@ -119,6 +118,9 @@ public class QrCam:
     metadataOutput.metadataObjectTypes = [.qr, .ean8, .ean13, .code39, .code93, .code128, .pdf417, .upce, .dataMatrix]
     
     captureSession.commitConfiguration()
+    
+    let dims = CMVideoFormatDescriptionGetDimensions(videoDevice.activeFormat.formatDescription)
+    previewSize = CGSize(width: CGFloat(dims.width), height: CGFloat(dims.height))
   }
 
   public func captureOutput(
@@ -214,10 +216,11 @@ public class SwiftFlutterQrScanPlugin: NSObject, FlutterPlugin {
       self.registry.textureFrameAvailable(textureId)
     }
     
+    // TODO: Find out why previewWidth and previewHeight have to be flipped.
     return [
       "textureId": textureId,
-      "previewWidth": self.cam.previewSize.width,
-      "previewHeight": self.cam.previewSize.height
+      "previewWidth": self.cam.previewSize.height,
+      "previewHeight": self.cam.previewSize.width
     ]
   }
     
