@@ -4,6 +4,10 @@ import AVFoundation
 import CoreMotion
 import libkern
 
+public enum CaptureDeviceError : Error {
+  case access
+}
+
 @available(iOS 10.0, *)
 public class QrCam: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, AVCaptureMetadataOutputObjectsDelegate, FlutterTexture {
   public let captureSession = AVCaptureSession()
@@ -22,8 +26,6 @@ public class QrCam: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, AVCa
   private var queue = DispatchQueue(label: "io.cloudacy.flutter_qr_scan")
   
   public init(methodChannel: FlutterMethodChannel) {
-    
-    
     self.methodChannel = methodChannel
 
     super.init()
@@ -35,14 +37,17 @@ public class QrCam: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, AVCa
     connection.videoOrientation = .portrait
   }
   
-  public func startScanning() {
+  public func startScanning(
+    completion: @escaping (Result<Bool, CaptureDeviceError>) -> Void
+  ) {
     // request access
     AVCaptureDevice.requestAccess(for: .video) { (granted) in
       if (granted) {
         self.configureSession()
         self.captureSession.startRunning()
+        completion(.success(true))
       } else {
-        // TODO: send error when no access to the camera was granted
+        completion(.failure(.access))
       }
     }
   }
@@ -79,12 +84,14 @@ public class QrCam: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, AVCa
   public func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
     pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer)
     
-    if onFrameAvailable != nil {
       onFrameAvailable?()
     }
-  }
 
-  public func metadataOutput(_ output: AVCaptureMetadataOutput, didOutput metadataObjects: [AVMetadataObject], from connection: AVCaptureConnection) {
+  public func metadataOutput(
+    _ output: AVCaptureMetadataOutput,
+    didOutput metadataObjects: [AVMetadataObject],
+    from connection: AVCaptureConnection
+  ) {
     if let metadataObject = metadataObjects.first {
       guard let readableObject = metadataObject as? AVMetadataMachineReadableCodeObject else { return }
       guard let stringValue = readableObject.stringValue else { return }
@@ -111,13 +118,17 @@ public class QrCam: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, AVCa
 
 @available(iOS 10.0, *)
 public class SwiftFlutterQrScanPlugin: NSObject, FlutterPlugin {
-  private(set) var registry: FlutterTextureRegistry
-  private(set) var messenger: FlutterBinaryMessenger
-  private(set) var methodChannel: FlutterMethodChannel
+  private let registry: FlutterTextureRegistry
+  private let messenger: FlutterBinaryMessenger
+  private let methodChannel: FlutterMethodChannel
   
-  private(set) var cam: QrCam
+  private let cam: QrCam
 
-  init(registry: FlutterTextureRegistry, messenger: FlutterBinaryMessenger, methodChannel: FlutterMethodChannel) {
+  init(
+    registry: FlutterTextureRegistry,
+    messenger: FlutterBinaryMessenger,
+    methodChannel: FlutterMethodChannel
+  ) {
     self.registry = registry
     self.messenger = messenger
     self.methodChannel = methodChannel
@@ -146,22 +157,35 @@ public class SwiftFlutterQrScanPlugin: NSObject, FlutterPlugin {
     }
   }
 
-  public func initializeQrScanner(call: FlutterMethodCall, result: FlutterResult) -> Void {
-    cam.startScanning()
+  public func registerTexture() -> [String : Any] {
+    let textureId = self.registry.register(self.cam)
     
-    let textureId = registry.register(cam)
-    
-    cam.onFrameAvailable = {
+    self.cam.onFrameAvailable = {
       self.registry.textureFrameAvailable(textureId)
     }
     
-    let resultObject = [
+    return [
       "textureId": textureId,
-      "previewWidth": cam.previewSize.width,
-      "previewHeight": cam.previewSize.height
-    ] as [String : Any]
+      "previewWidth": self.cam.previewSize.width,
+      "previewHeight": self.cam.previewSize.height
+    ]
+  }
     
-    result(resultObject)
+  public func initializeQrScanner(call: FlutterMethodCall, result: @escaping FlutterResult) -> Void {
+    self.cam.startScanning() { r in
+      switch r {
+      case .failure(let error):
+        switch error {
+        case .access:
+          result(FlutterError(code: "CaptureDeviceAccess", message: "The user didn't allow access to the capture device!", details: nil))
+          break
+        }
+        break
+      case .success(_):
+        result(self.registerTexture())
+        break
+      }
+    }
   }
 }
 
