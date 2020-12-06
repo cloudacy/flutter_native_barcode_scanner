@@ -61,6 +61,9 @@ public class QrCam: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, AVCa
       return
     }
     
+    let dims = CMVideoFormatDescriptionGetDimensions(videoDevice.activeFormat.formatDescription)
+    previewSize = CGSize(width: CGFloat(dims.width), height: CGFloat(dims.height))
+    
     guard let videoDeviceInput = try? AVCaptureDeviceInput(device: videoDevice) else {
       captureSession.commitConfiguration()
       return
