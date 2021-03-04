@@ -10,6 +10,6 @@
 
 @implementation FlutterQrScanPlugin
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
-  [SwiftFlutterQrScanPlugin registerWithRegistrar:registrar];
+  [FLQRScan registerWithRegistrar:registrar];
 }
 @end

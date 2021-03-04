@@ -9,7 +9,7 @@ public enum CaptureDeviceError : Error {
 }
 
 @available(iOS 10.0, *)
-public class QrCam:
+public class FLQRScanCamera:
   NSObject,
   AVCaptureVideoDataOutputSampleBufferDelegate,
   AVCaptureMetadataOutputObjectsDelegate,
@@ -33,7 +33,7 @@ public class QrCam:
   
   public init(methodChannel: FlutterMethodChannel) {
     self.methodChannel = methodChannel
-
+    
     super.init()
     
     videoOutput.setSampleBufferDelegate(self, queue: queue)
@@ -122,7 +122,7 @@ public class QrCam:
     let dims = CMVideoFormatDescriptionGetDimensions(videoDevice.activeFormat.formatDescription)
     previewSize = CGSize(width: CGFloat(dims.width), height: CGFloat(dims.height))
   }
-
+  
   public func captureOutput(
     _ output: AVCaptureOutput,
     didOutput sampleBuffer: CMSampleBuffer,
@@ -132,7 +132,7 @@ public class QrCam:
     
     onFrameAvailable?()
   }
-
+  
   public func metadataOutput(
     _ output: AVCaptureMetadataOutput,
     didOutput metadataObjects: [AVMetadataObject],
@@ -152,7 +152,7 @@ public class QrCam:
       methodChannel?.invokeMethod("code", arguments: stringValue)
     }
   }
-
+  
   public func copyPixelBuffer() -> Unmanaged<CVPixelBuffer>? {
     if self.pixelBuffer == nil {
       return nil
@@ -163,13 +163,13 @@ public class QrCam:
 }
 
 @available(iOS 10.0, *)
-public class SwiftFlutterQrScanPlugin: NSObject, FlutterPlugin {
+public class FLQRScan: NSObject, FlutterPlugin {
   private let registry: FlutterTextureRegistry
   private let messenger: FlutterBinaryMessenger
   private let methodChannel: FlutterMethodChannel
   
-  private let cam: QrCam
-
+  private let cam: FLQRScanCamera
+  
   init(
     registry: FlutterTextureRegistry,
     messenger: FlutterBinaryMessenger,
@@ -178,16 +178,16 @@ public class SwiftFlutterQrScanPlugin: NSObject, FlutterPlugin {
     self.registry = registry
     self.messenger = messenger
     self.methodChannel = methodChannel
-    self.cam = QrCam(methodChannel: methodChannel)
+    self.cam = FLQRScanCamera(methodChannel: methodChannel)
   }
   
   public class func register(with registrar: FlutterPluginRegistrar) {
     let channel = FlutterMethodChannel(name: "flutter_qr_scan", binaryMessenger: registrar.messenger())
-    let instance = SwiftFlutterQrScanPlugin(registry: registrar.textures(), messenger: registrar.messenger(), methodChannel: channel)
+    let instance = FLQRScan(registry: registrar.textures(), messenger: registrar.messenger(), methodChannel: channel)
     
     registrar.addMethodCallDelegate(instance, channel: channel)
   }
-
+  
   public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
     switch call.method {
     case "start":
@@ -208,7 +208,7 @@ public class SwiftFlutterQrScanPlugin: NSObject, FlutterPlugin {
       break
     }
   }
-
+  
   public func registerTexture() -> [String : Any] {
     let textureId = self.registry.register(self.cam)
     
@@ -223,7 +223,7 @@ public class SwiftFlutterQrScanPlugin: NSObject, FlutterPlugin {
       "previewHeight": self.cam.previewSize.width
     ]
   }
-    
+  
   public func initializeQrScanner(call: FlutterMethodCall, result: @escaping FlutterResult) -> Void {
     self.cam.startScanning() { r in
       switch r {
@@ -243,5 +243,5 @@ public class SwiftFlutterQrScanPlugin: NSObject, FlutterPlugin {
 }
 
 private func getFlutterError(error: Error?) -> FlutterError? {
-    return FlutterError(code: "Error", message: (error as NSError?)?.domain, details: error?.localizedDescription)
+  return FlutterError(code: "Error", message: (error as NSError?)?.domain, details: error?.localizedDescription)
 }
