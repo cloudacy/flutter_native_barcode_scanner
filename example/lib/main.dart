@@ -13,12 +13,8 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  int textureId;
-
-  double previewWidth;
-  double previewHeight;
-
-  String barcodeData;
+  final _textureStream = StreamController<FlutterQrScanTexture>();
+  final _codeStream = StreamController<dynamic>();
 
   @override
   void initState() {
@@ -27,33 +23,60 @@ class _MyAppState extends State<MyApp> {
     _scanQRCode();
   }
 
+  Future<void> _showErrorDialog({
+    required Widget content,
+  }) {
+    return showDialog<void>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('An error occurred.'),
+          content: content,
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Future<void> _scanQRCode() async {
     // Start the QR Scan.
     final startResult = await FlutterQrScan.start();
-    print('start: $startResult');
-
-    // Set the textureId to the value, returned from the "start" function.
-    setState(() {
-      this.textureId = startResult['textureId'];
-      this.previewWidth = (startResult['previewWidth'] as num).toDouble() ?? 1920;
-      this.previewHeight = (startResult['previewHeight'] as num).toDouble() ?? 1080;
-    });
+    if (startResult == null) {
+      _showErrorDialog(content: const Text('Unable to start the QR-code scan.'));
+      return;
+    }
+    print(startResult);
+    // Add returned values to the textureStream.
+    _textureStream.add(
+      FlutterQrScanTexture(
+        id: startResult['textureId'],
+        width: (startResult['previewWidth'] as num?)?.toDouble() ?? 1920,
+        height: (startResult['previewHeight'] as num?)?.toDouble() ?? 1080,
+      ),
+    );
 
     // Get the QR code stream.
     final codeStream = FlutterQrScan.getCodeStream();
+    if (codeStream == null) {
+      _showErrorDialog(content: const Text('Unable to get the QR-code scan code stream.'));
+      return;
+    }
 
     // Wait until the first QR code comes in.
-    final data = await codeStream.first;
+    final code = await codeStream.first;
 
-    // Set the barcode data and set textureId to null to stop the scan.
-    setState(() {
-      this.barcodeData = data;
-      this.textureId = null;
-    });
+    // Add the code to the _codeStream.
+    _codeStream.add(code);
 
-    // Stop the QR code scan process.
-    final stopResult = await FlutterQrScan.stop();
-    print('stop: $stopResult');
+    // Stop the QR-code scan process.
+    await FlutterQrScan.stop();
   }
 
   @override
@@ -61,17 +84,53 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(
-          title: const Text('Plugin example app'),
+          title: const Text('QR-code scan example'),
         ),
-        body: Center(
+        body: SafeArea(
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              if (textureId != null)
-                AspectRatio(
-                  aspectRatio: previewWidth / previewHeight,
-                  child: Texture(textureId: textureId),
+              Expanded(
+                child: Center(
+                  child: StreamBuilder<FlutterQrScanTexture>(
+                    stream: _textureStream.stream,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState != ConnectionState.active) {
+                        return const CircularProgressIndicator();
+                      }
+
+                      final texture = snapshot.data;
+                      if (texture == null) {
+                        return const CircularProgressIndicator();
+                      }
+
+                      return AspectRatio(
+                        aspectRatio: texture.width / texture.height,
+                        child: Texture(textureId: texture.id),
+                      );
+                    },
+                  ),
                 ),
-              if (barcodeData != null) Text(barcodeData)
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: StreamBuilder<dynamic>(
+                  stream: _codeStream.stream,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState != ConnectionState.active) {
+                      return const Text('waiting for code ...');
+                    }
+
+                    final code = snapshot.data;
+                    if (code == null) {
+                      return const Text('waiting for code ...');
+                    }
+
+                    return Text(code.toString());
+                  },
+                ),
+              )
             ],
           ),
         ),
