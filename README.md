@@ -1,8 +1,8 @@
 # flutter_qr_scan
 
-A lightweight QR-code scanning plugin for flutter.
+A lightweight QR-code scan plugin for flutter.
 
-⚠️ This package is still in alpha stage! ⚠️
+⚠️ This package is still in beta stage! ⚠️
 
 ## Integration
 
