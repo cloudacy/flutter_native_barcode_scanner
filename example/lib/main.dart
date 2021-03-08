@@ -4,15 +4,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_qr_scan/flutter_qr_scan.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(MaterialApp(home: FlutterQrScanExample()));
 }
 
-class MyApp extends StatefulWidget {
+class FlutterQrScanExample extends StatefulWidget {
   @override
-  _MyAppState createState() => _MyAppState();
+  _FlutterQrScanExampleState createState() => _FlutterQrScanExampleState();
 }
 
-class _MyAppState extends State<MyApp> {
+class _FlutterQrScanExampleState extends State<FlutterQrScanExample> {
   final _textureStream = StreamController<FlutterQrScanTexture>();
   final _codeStream = StreamController<dynamic>();
 
@@ -47,92 +47,81 @@ class _MyAppState extends State<MyApp> {
 
   Future<void> _scanQRCode() async {
     // Start the QR Scan.
-    final startResult = await FlutterQrScan.start();
-    if (startResult == null) {
-      _showErrorDialog(content: const Text('Unable to start the QR-code scan.'));
-      return;
+    try {
+      final texture = await FlutterQrScan.start();
+      if (texture == null) {
+        _showErrorDialog(content: const Text('Unable to start the QR-code scan.'));
+        return;
+      }
+
+      // Add returned values to the textureStream.
+      _textureStream.add(texture);
+
+      // Get the QR code stream.
+      final codeStream = FlutterQrScan.getCodeStream();
+      if (codeStream == null) {
+        _showErrorDialog(content: const Text('Unable to get the QR-code scan code stream.'));
+        return;
+      }
+
+      // Wait until the first QR code comes in.
+      final code = await codeStream.first;
+
+      // Add the code to the _codeStream.
+      _codeStream.add(code);
+
+      // Stop the QR-code scan process.
+      await FlutterQrScan.stop();
+    } catch (e) {
+      _showErrorDialog(content: Text('Error: $e'));
     }
-    print(startResult);
-    // Add returned values to the textureStream.
-    _textureStream.add(
-      FlutterQrScanTexture(
-        id: startResult['textureId'],
-        width: (startResult['previewWidth'] as num?)?.toDouble() ?? 1920,
-        height: (startResult['previewHeight'] as num?)?.toDouble() ?? 1080,
-      ),
-    );
-
-    // Get the QR code stream.
-    final codeStream = FlutterQrScan.getCodeStream();
-    if (codeStream == null) {
-      _showErrorDialog(content: const Text('Unable to get the QR-code scan code stream.'));
-      return;
-    }
-
-    // Wait until the first QR code comes in.
-    final code = await codeStream.first;
-
-    // Add the code to the _codeStream.
-    _codeStream.add(code);
-
-    // Stop the QR-code scan process.
-    await FlutterQrScan.stop();
   }
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text('QR-code scan example'),
-        ),
-        body: SafeArea(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Expanded(
-                child: Center(
-                  child: StreamBuilder<FlutterQrScanTexture>(
-                    stream: _textureStream.stream,
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState != ConnectionState.active) {
-                        return const CircularProgressIndicator();
-                      }
-
-                      final texture = snapshot.data;
-                      if (texture == null) {
-                        return const CircularProgressIndicator();
-                      }
-
-                      return AspectRatio(
-                        aspectRatio: texture.width / texture.height,
-                        child: Texture(textureId: texture.id),
-                      );
-                    },
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: StreamBuilder<dynamic>(
-                  stream: _codeStream.stream,
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('QR-code scan example'),
+      ),
+      body: SafeArea(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Expanded(
+              child: Center(
+                child: StreamBuilder<FlutterQrScanTexture>(
+                  stream: _textureStream.stream,
                   builder: (context, snapshot) {
-                    if (snapshot.connectionState != ConnectionState.active) {
-                      return const Text('waiting for code ...');
+                    final texture = snapshot.data;
+                    if (texture == null) {
+                      return const CircularProgressIndicator();
                     }
 
-                    final code = snapshot.data;
-                    if (code == null) {
-                      return const Text('waiting for code ...');
-                    }
-
-                    return Text(code.toString());
+                    return FlutterQrScanPreview(texture: texture);
                   },
                 ),
-              )
-            ],
-          ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: StreamBuilder<dynamic>(
+                stream: _codeStream.stream,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState != ConnectionState.active) {
+                    return const Text('waiting for code ...');
+                  }
+
+                  final code = snapshot.data;
+                  if (code == null) {
+                    return const Text('waiting for code ...');
+                  }
+
+                  return Text(code.toString());
+                },
+              ),
+            ),
+          ],
         ),
       ),
     );
