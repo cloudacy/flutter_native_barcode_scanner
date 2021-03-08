@@ -4,9 +4,80 @@ A lightweight QR-code scan plugin for flutter.
 
 ⚠️ This package is still in beta stage! ⚠️
 
-## Integration
+## Example
 
-### Android specific
+```dart
+class FlutterQrScanExample extends StatefulWidget {
+  @override
+  _FlutterQrScanExampleState createState() => _FlutterQrScanExampleState();
+}
+
+class _FlutterQrScanExampleState extends State<FlutterQrScanExample> {
+  final _textureStream = StreamController<FlutterQrScanTexture>();
+
+  @override
+  void initState() {
+    super.initState();
+
+    _scanQRCode();
+  }
+
+  Future<void> _scanQRCode() async {
+    try {
+      // Start the QR-code scan.
+      final texture = await FlutterQrScan.start();
+      if (texture == null) {
+        // Handle error.
+        return;
+      }
+
+      // Add the returned texture to the textureStream.
+      _textureStream.add(texture);
+
+      // Get the QR code stream.
+      final codeStream = FlutterQrScan.getCodeStream();
+      if (codeStream == null) {
+        // Handle error.
+        return;
+      }
+
+      // Wait until the first QR code comes in.
+      final code = await codeStream.first;
+
+      // Process code ...
+
+      // Stop the QR-code scan process.
+      await FlutterQrScan.stop();
+    } catch (e) {
+      // Handle error.
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('QR-code scan example')),
+      body: Center(
+        child: StreamBuilder<FlutterQrScanTexture>(
+          stream: _textureStream.stream,
+          builder: (context, snapshot) {
+            final texture = snapshot.data;
+            if (texture == null) {
+              return CircularProgressIndicator();
+            }
+
+            return FlutterQrScanPreview(texture: texture);
+          },
+        ),
+      ),
+    );
+  }
+}
+```
+
+## Installation
+
+### Android
 
 Open the project in `Android Studio`, by opening `example/android/build.gradle`.
 
