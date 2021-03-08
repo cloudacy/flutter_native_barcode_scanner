@@ -46,15 +46,15 @@ class _FlutterQrScanExampleState extends State<FlutterQrScanExample> {
   }
 
   Future<void> _scanQRCode() async {
-    // Start the QR Scan.
     try {
+      // Start the QR-code scan.
       final texture = await FlutterQrScan.start();
       if (texture == null) {
         _showErrorDialog(content: const Text('Unable to start the QR-code scan.'));
         return;
       }
 
-      // Add returned values to the textureStream.
+      // Add the returned texture to the textureStream.
       _textureStream.add(texture);
 
       // Get the QR code stream.
