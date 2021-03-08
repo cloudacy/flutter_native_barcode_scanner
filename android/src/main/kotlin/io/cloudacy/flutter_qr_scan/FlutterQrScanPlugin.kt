@@ -6,10 +6,7 @@ import android.app.Activity
 import android.content.pm.PackageManager
 import android.view.Surface
 import androidx.annotation.NonNull
-import androidx.camera.core.CameraSelector
-import androidx.camera.core.ImageAnalysis
-import androidx.camera.core.ImageProxy
-import androidx.camera.core.Preview
+import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -170,6 +167,7 @@ class FlutterQrScanPlugin(): FlutterPlugin, MethodCallHandler, ActivityAware, Pl
     return true
   }
 
+  @SuppressLint("RestrictedApi")
   private fun startCamera(result: Result) {
     val activity = activity ?: return
     val cameraExecutor = cameraExecutor ?: return
@@ -187,11 +185,11 @@ class FlutterQrScanPlugin(): FlutterPlugin, MethodCallHandler, ActivityAware, Pl
 
       // Preview
       val preview = Preview.Builder()
+        .setTargetAspectRatio(AspectRatio.RATIO_4_3)
         .build()
         .also {
           it.setSurfaceProvider {
             val resolution = it.resolution
-            println("request surface resolution: $resolution")
             surfaceTexture.setDefaultBufferSize(resolution.width, resolution.height)
             val surface = Surface(surfaceTexture)
             it.provideSurface(surface, ContextCompat.getMainExecutor(activity.baseContext), Consumer {})
@@ -222,7 +220,9 @@ class FlutterQrScanPlugin(): FlutterPlugin, MethodCallHandler, ActivityAware, Pl
       }
 
       result.success(mapOf(
-        "textureId" to surfaceTextureEntry.id()
+        "textureId" to surfaceTextureEntry.id(),
+        "previewWidth" to preview.attachedSurfaceResolution?.width,
+        "previewHeight" to preview.attachedSurfaceResolution?.height
       ))
     }, ContextCompat.getMainExecutor(activity.baseContext))
   }
