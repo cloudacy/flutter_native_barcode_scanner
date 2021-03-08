@@ -4,8 +4,10 @@ import AVFoundation
 import CoreMotion
 import libkern
 
-public enum CaptureDeviceError : Error {
+public enum FLQRScanError : Error {
   case access
+  case noVideoDevice
+  case noVideoDeviceInput
 }
 
 @available(iOS 10.0, *)
@@ -40,14 +42,21 @@ public class FLQRScanCamera:
   }
   
   public func startScanning(
-    completion: @escaping (Result<Bool, CaptureDeviceError>) -> Void
+    completion: @escaping (Result<Bool, FLQRScanError>) -> Void
   ) {
     // request access
     AVCaptureDevice.requestAccess(for: .video) { (granted) in
       if (granted) {
-        self.configureSession()
-        self.captureSession.startRunning()
-        completion(.success(true))
+        let configureSessionResult = self.configureSession()
+        switch configureSessionResult {
+        case .failure(_):
+          completion(configureSessionResult)
+          break
+        case .success(_):
+          self.captureSession.startRunning()
+          completion(configureSessionResult)
+          break
+        }
       } else {
         completion(.failure(.access))
       }
@@ -63,11 +72,9 @@ public class FLQRScanCamera:
       case .portraitUpsideDown:
         connection.videoOrientation = .portraitUpsideDown
         break
-      // TODO: Find out why this has to be flipped.
       case .landscapeLeft:
         connection.videoOrientation = .landscapeRight
         break
-      // TODO: Find out why this has to be flipped.
       case .landscapeRight:
         connection.videoOrientation = .landscapeLeft
         break
@@ -78,18 +85,18 @@ public class FLQRScanCamera:
     }
   }
   
-  private func configureSession() {
+  private func configureSession() -> Result<Bool, FLQRScanError> {
     captureSession.beginConfiguration()
     captureSession.sessionPreset = quality
     
     guard let videoDevice = AVCaptureDevice.default(for: .video) else {
       captureSession.commitConfiguration()
-      return
+      return .failure(.noVideoDevice)
     }
     
     guard let videoDeviceInput = try? AVCaptureDeviceInput(device: videoDevice) else {
       captureSession.commitConfiguration()
-      return
+      return .failure(.noVideoDeviceInput)
     }
     
     if captureSession.canAddInput(videoDeviceInput) {
@@ -121,6 +128,8 @@ public class FLQRScanCamera:
     
     let dims = CMVideoFormatDescriptionGetDimensions(videoDevice.activeFormat.formatDescription)
     previewSize = CGSize(width: CGFloat(dims.width), height: CGFloat(dims.height))
+    
+    return .success(true)
   }
   
   public func captureOutput(
@@ -216,11 +225,10 @@ public class FLQRScan: NSObject, FlutterPlugin {
       self.registry.textureFrameAvailable(textureId)
     }
     
-    // TODO: Find out why previewWidth and previewHeight have to be flipped.
     return [
       "textureId": textureId,
-      "previewWidth": self.cam.previewSize.height,
-      "previewHeight": self.cam.previewSize.width
+      "previewWidth": self.cam.previewSize.width,
+      "previewHeight": self.cam.previewSize.height
     ]
   }
   
@@ -230,7 +238,13 @@ public class FLQRScan: NSObject, FlutterPlugin {
       case .failure(let error):
         switch error {
         case .access:
-          result(FlutterError(code: "CaptureDeviceAccess", message: "The user didn't allow access to the capture device!", details: nil))
+          result(FlutterError(code: "NoDeviceAccess", message: "The user didn't allow access to the capture device!", details: nil))
+          break
+        case .noVideoDevice:
+          result(FlutterError(code: "NoVideoDevice", message: "This device doesn't provide a VideoDevice!", details: nil))
+          break
+        case .noVideoDeviceInput:
+          result(FlutterError(code: "NoVideoDeviceInput", message: "This device doesn't provide a VideoDeviceInput!", details: nil))
           break
         }
         break
