@@ -79,9 +79,7 @@ class _FlutterQrScanExampleState extends State<FlutterQrScanExample> {
 
 ### Android
 
-Open the project in `Android Studio`, by opening `example/android/build.gradle`.
-
-Add the barcode ML model to the AndroidManifest.xml file of the app.
+Add the barcode ML model to the `<projcet-root>/android/app/src/main/AndroidManifest.xml` file of the app.
 https://firebase.google.com/docs/ml-kit/android/read-barcodes
 
 ```xml
