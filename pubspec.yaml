@@ -1,5 +1,5 @@
 name: flutter_qr_scan
-description: A lightweight Flutter QR-code scan plugin for android and iOS.
+description: A lightweight Flutter QR-code scan plugin for Android and iOS.
 version: 0.2.1
 author: Dominik Kuen <d.kuen@cloudacy.com> & Patrick Kuen <p.kuen@cloudacy.com>
 homepage: https://cloudacy.com
