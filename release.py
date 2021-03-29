@@ -42,6 +42,7 @@ print('Staging pubspec.yaml and example/pubspec.lock ...')
 
 subprocess.run(['git', 'add', 'pubspec.yaml'])
 subprocess.run(['git', 'add', 'example/pubspec.lock'])
+subprocess.run(['git', 'add', 'CHANGELOG.md'])
 
 print('Creating version commit and tag ...')
 
