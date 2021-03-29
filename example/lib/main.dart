@@ -14,7 +14,7 @@ class FlutterQrScanExample extends StatefulWidget {
 
 class _FlutterQrScanExampleState extends State<FlutterQrScanExample> {
   final _textureStream = StreamController<FlutterQrScanTexture>();
-  final _codeStream = StreamController<dynamic>();
+  final _codeStream = StreamController<Object?>();
 
   @override
   void initState() {
@@ -51,29 +51,32 @@ class _FlutterQrScanExampleState extends State<FlutterQrScanExample> {
       final texture = await FlutterQrScan.start();
       if (texture == null) {
         _showErrorDialog(content: const Text('Unable to start the QR-code scan.'));
+
+        // Stop the QR-code scan process.
+        await FlutterQrScan.stop();
         return;
       }
 
       // Add the returned texture to the textureStream.
       _textureStream.add(texture);
 
-      // Get the QR code stream.
-      final codeStream = FlutterQrScan.getCodeStream();
-      if (codeStream == null) {
-        _showErrorDialog(content: const Text('Unable to get the QR-code scan code stream.'));
+      // Wait for a code.
+      final code = await FlutterQrScan.getCode();
+      if (code == null) {
+        _showErrorDialog(content: const Text('Unable to get a QR-code.'));
+
+        // Stop the QR-code scan process.
+        await FlutterQrScan.stop();
         return;
       }
 
-      // Wait until the first QR code comes in.
-      final code = await codeStream.first;
-
       // Add the code to the _codeStream.
       _codeStream.add(code);
-
-      // Stop the QR-code scan process.
-      await FlutterQrScan.stop();
     } catch (e) {
       _showErrorDialog(content: Text('Error: $e'));
+    } finally {
+      // Stop the QR-code scan process.
+      await FlutterQrScan.stop();
     }
   }
 
@@ -104,8 +107,8 @@ class _FlutterQrScanExampleState extends State<FlutterQrScanExample> {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: StreamBuilder<dynamic>(
+              padding: const EdgeInsets.all(8),
+              child: StreamBuilder<Object?>(
                 stream: _codeStream.stream,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState != ConnectionState.active) {
