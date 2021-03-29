@@ -10,7 +10,6 @@ public enum FLQRScanError : Error {
   case noVideoDeviceInput
 }
 
-@available(iOS 10.0, *)
 public class FLQRScanCamera:
   NSObject,
   AVCaptureVideoDataOutputSampleBufferDelegate,
@@ -171,7 +170,6 @@ public class FLQRScanCamera:
   }
 }
 
-@available(iOS 10.0, *)
 public class FLQRScan: NSObject, FlutterPlugin {
   private let registry: FlutterTextureRegistry
   private let messenger: FlutterBinaryMessenger

@@ -89,3 +89,14 @@ https://firebase.google.com/docs/ml-kit/android/read-barcodes
   <!-- To use multiple models: android:value="barcode,model2,model3" -->
 </application>
 ```
+
+### iOS
+
+**This plugin supports iOS 10.0 or higher.**
+
+Make sure that the `NSCameraUsageDescription` (or `Privacy - Camera Usage Description`) string is set at `ios/Runner/info.plist` to scan codes.
+
+```xml
+<key>NSCameraUsageDescription</key>
+<string>...</string>
+```
