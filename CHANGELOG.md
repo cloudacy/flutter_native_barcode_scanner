@@ -3,6 +3,11 @@
 - feat!: introduce FlutterQrScan.getCode ([b9e08f7](https://github.com/cloudacy/flutter_qr_scan/commit/b9e08f7dc9fea78b74cff142659af89ad0be4f00))
 - See commit logs for more changes.
 
+### 0.2.1
+
+- chore(android): update dependencies ([5321b20](https://github.com/cloudacy/flutter_qr_scan/commit/5321b20dd391a61b9634d050b7d0cbe08cd3b854))
+- See commit logs for more changes.
+
 ## 0.1.0
 
 - Enable null safety ([a395b55](https://github.com/cloudacy/flutter_qr_scan/commit/a395b55ce53ac10aa15dacac00abaa3578d8d4dd))
