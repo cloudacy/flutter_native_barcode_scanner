@@ -1,0 +1,12 @@
+include: package:effective_dart/analysis_options.yaml
+
+analyzer:
+  strong-mode:
+    implicit-casts: false
+    implicit-dynamic: false
+
+linter:
+  rules:
+    lines_longer_than_80_chars: false
+    avoid_catches_without_on_clauses: false
+    public_member_api_docs: false
