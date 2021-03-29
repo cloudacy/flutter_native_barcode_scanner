@@ -79,6 +79,8 @@ class _FlutterQrScanExampleState extends State<FlutterQrScanExample> {
 
 ### Android
 
+**This plugin supports Android 5.0 ("Lollipop", SDK 21) or higher.**
+
 Add the barcode ML model to the `<projcet-root>/android/app/src/main/AndroidManifest.xml` file of the app.
 https://firebase.google.com/docs/ml-kit/android/read-barcodes
 
