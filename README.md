@@ -1,6 +1,6 @@
 # flutter_qr_scan
 
-A lightweight QR-code scan plugin for flutter.
+A lightweight Flutter QR-code scan plugin for android and iOS.
 
 ⚠️ This package is still in beta stage! ⚠️
 
@@ -27,29 +27,32 @@ class _FlutterQrScanExampleState extends State<FlutterQrScanExample> {
       // Start the QR-code scan.
       final texture = await FlutterQrScan.start();
       if (texture == null) {
-        // Handle error.
+        // Handle error...
+
+        // Stop the QR-code scan process.
+        await FlutterQrScan.stop();
         return;
       }
 
       // Add the returned texture to the textureStream.
       _textureStream.add(texture);
 
-      // Get the QR code stream.
-      final codeStream = FlutterQrScan.getCodeStream();
-      if (codeStream == null) {
-        // Handle error.
+      // Wait until the first QR code comes in.
+      final code = await FlutterQrScan.getCode();
+      if (code == null) {
+        // Handle error...
+
+        // Stop the QR-code scan process.
+        await FlutterQrScan.stop();
         return;
       }
 
-      // Wait until the first QR code comes in.
-      final code = await codeStream.first;
-
       // Process code ...
-
+    } catch (e) {
+      // Handle error...
+    } finally {
       // Stop the QR-code scan process.
       await FlutterQrScan.stop();
-    } catch (e) {
-      // Handle error.
     }
   }
 
