@@ -19,7 +19,6 @@ public class FLNativeBarcodeScannerCamera:
   private let quality = AVCaptureSession.Preset.medium
   private var pixelBuffer: CVPixelBuffer?
   
-  public  var orientationObserver: NSObjectProtocol?
   public  var previewSize = CGSize(width: 1920, height: 1080)
   public  var onFrameAvailable: (() -> Void)?
   public  var methodChannel: FlutterMethodChannel?
@@ -60,28 +59,6 @@ public class FLNativeBarcodeScannerCamera:
     }
   }
   
-  private func changeVideoOutputOrientation() {
-    if let connection = videoOutput.connection(with: AVFoundation.AVMediaType.video) {
-      switch UIDevice.current.orientation {
-      case .portrait:
-        connection.videoOrientation = .portrait
-        break
-      case .portraitUpsideDown:
-        connection.videoOrientation = .portraitUpsideDown
-        break
-      case .landscapeLeft:
-        connection.videoOrientation = .landscapeRight
-        break
-      case .landscapeRight:
-        connection.videoOrientation = .landscapeLeft
-        break
-      default:
-        // Do nothing.
-        break
-      }
-    }
-  }
-  
   private func configureSession() -> Result<Bool, FLNativeBarcodeScannerError> {
     captureSession.beginConfiguration()
     captureSession.sessionPreset = quality
@@ -102,15 +79,6 @@ public class FLNativeBarcodeScannerCamera:
     
     if captureSession.canAddOutput(videoOutput) {
       captureSession.addOutput(videoOutput)
-      
-      orientationObserver = NotificationCenter.default.addObserver(
-        forName: UIDevice.orientationDidChangeNotification,
-        object: nil, queue: nil
-      ) { _ in
-        self.changeVideoOutputOrientation()
-      }
-      
-      changeVideoOutputOrientation()
     }
     
     if captureSession.canAddOutput(metadataOutput) {
@@ -199,11 +167,6 @@ public class FLNativeBarcodeScanner: NSObject, FlutterPlugin {
       initializeScanner(call: call, result: result)
       break
     case "stop":
-      // Remove the orientation observer.
-      if let observer = cam.orientationObserver {
-        NotificationCenter.default.removeObserver(observer, name: UIDevice.orientationDidChangeNotification, object: nil)
-      }
-      
       cam.captureSession.stopRunning()
       
       result(true)
