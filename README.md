@@ -1,6 +1,6 @@
 # flutter_native_barcode_scanner
 
-A barcode scanner for flutter, using platform native APIs.
+A barcode scanner for Flutter, using platform native APIs.
 
 ⚠️ This package is still in beta stage! ⚠️
 

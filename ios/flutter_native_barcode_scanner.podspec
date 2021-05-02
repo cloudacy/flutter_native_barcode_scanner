@@ -5,9 +5,9 @@
 Pod::Spec.new do |s|
   s.name             = 'flutter_native_barcode_scanner'
   s.version          = '0.3.0'
-  s.summary          = 'A barcode scanner for flutter, using platform native APIs.'
+  s.summary          = 'A barcode scanner for Flutter, using platform native APIs.'
   s.description      = <<-DESC
-A barcode scanner for flutter, using platform native APIs.
+A barcode scanner for Flutter, using platform native APIs.
                        DESC
   s.homepage         = 'https://cloudacy.com'
   s.license          = { :file => '../LICENSE' }

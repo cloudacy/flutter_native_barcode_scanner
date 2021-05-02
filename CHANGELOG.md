@@ -1,5 +1,8 @@
 ## 0.3.0
 
+- refactor!: rename getCode to getBarcode ([c6fc199](https://github.com/cloudacy/flutter_native_barcode_scanner/commit/c6fc199fd024c51a80bc69bc7346e23624c86221))
+- refactor!: rename package to flutter_native_barcode_scanner ([97559ef](https://github.com/cloudacy/flutter_native_barcode_scanner/commit/97559eff8cb828d9bc63fc13be86a4f919799d21))
+
 ## 0.2.0
 
 - feat!: introduce FlutterQrScan.getCode ([b9e08f7](https://github.com/cloudacy/flutter_qr_scan/commit/b9e08f7dc9fea78b74cff142659af89ad0be4f00))
