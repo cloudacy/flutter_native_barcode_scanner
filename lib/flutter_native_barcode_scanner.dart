@@ -100,7 +100,7 @@ class FlutterNativeBarcodeScanner {
   ///
   /// Returns `null` if no code got sent from the platform (e.g. the process got canceled)
   /// or if the barcode scan process is not running.
-  static Future<Object?> getCode() {
+  static Future<Object?> getBarcode() {
     final stream = _controller?.stream;
     if (stream == null) {
       return Future.value(null);

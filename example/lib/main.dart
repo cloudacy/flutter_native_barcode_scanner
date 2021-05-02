@@ -61,7 +61,7 @@ class _FlutterNativeBarcodeScannerExampleState extends State<FlutterNativeBarcod
       _textureStream.add(texture);
 
       // Wait for a code.
-      final code = await FlutterNativeBarcodeScanner.getCode();
+      final code = await FlutterNativeBarcodeScanner.getBarcode();
       if (code == null) {
         _showErrorDialog(content: const Text('Unable to get a barcode.'));
 

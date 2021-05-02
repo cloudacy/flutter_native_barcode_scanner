@@ -38,7 +38,7 @@ class _FlutterNativeBarcodeScannerExampleState extends State<FlutterNativeBarcod
       _textureStream.add(texture);
 
       // Wait until the first barcode comes in.
-      final code = await FlutterNativeBarcodeScanner.getCode();
+      final code = await FlutterNativeBarcodeScanner.getBarcode();
       if (code == null) {
         // Handle error...
 
