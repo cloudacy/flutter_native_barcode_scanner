@@ -1,3 +1,7 @@
+## 0.4.0
+
+- refactor!: remove iOS orientation handling ([9205a41](https://github.com/cloudacy/flutter_native_barcode_scanner/commit/9205a4146b08aa651ddfebce91a60a1d8316d2a8))
+
 ## 0.3.0
 
 - refactor!: rename getCode to getBarcode ([c6fc199](https://github.com/cloudacy/flutter_native_barcode_scanner/commit/c6fc199fd024c51a80bc69bc7346e23624c86221))
