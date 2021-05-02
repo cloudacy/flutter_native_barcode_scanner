@@ -1,21 +1,21 @@
 PODS:
   - Flutter (1.0.0)
-  - flutter_qr_scan (0.0.1):
+  - flutter_native_barcode_scanner (0.0.1):
     - Flutter
 
 DEPENDENCIES:
   - Flutter (from `Flutter`)
-  - flutter_qr_scan (from `.symlinks/plugins/flutter_qr_scan/ios`)
+  - flutter_native_barcode_scanner (from `.symlinks/plugins/flutter_native_barcode_scanner/ios`)
 
 EXTERNAL SOURCES:
   Flutter:
     :path: Flutter
-  flutter_qr_scan:
-    :path: ".symlinks/plugins/flutter_qr_scan/ios"
+  flutter_native_barcode_scanner:
+    :path: ".symlinks/plugins/flutter_native_barcode_scanner/ios"
 
 SPEC CHECKSUMS:
   Flutter: 434fef37c0980e73bb6479ef766c45957d4b510c
-  flutter_qr_scan: cccc35c663a7321e48892f999da02b6c7d20c1ec
+  flutter_native_barcode_scanner: 14b137cd1ae3f0558f49698a660af77c6e4be5df
 
 PODFILE CHECKSUM: aafe91acc616949ddb318b77800a7f51bffa2a4c
 

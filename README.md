@@ -1,49 +1,49 @@
-# flutter_qr_scan
+# flutter_native_barcode_scanner
 
-A lightweight Flutter QR-code scan plugin for Android and iOS.
+A barcode scanner for flutter, using platform native APIs.
 
 ⚠️ This package is still in beta stage! ⚠️
 
 ## Example
 
 ```dart
-class FlutterQrScanExample extends StatefulWidget {
+class FlutterNativeBarcodeScannerExample extends StatefulWidget {
   @override
-  _FlutterQrScanExampleState createState() => _FlutterQrScanExampleState();
+  _FlutterNativeBarcodeScannerExampleState createState() => _FlutterNativeBarcodeScannerExampleState();
 }
 
-class _FlutterQrScanExampleState extends State<FlutterQrScanExample> {
-  final _textureStream = StreamController<FlutterQrScanTexture>();
+class _FlutterNativeBarcodeScannerExampleState extends State<FlutterNativeBarcodeScannerExample> {
+  final _textureStream = StreamController<FlutterNativeBarcodeScannerTexture>();
 
   @override
   void initState() {
     super.initState();
 
-    _scanQRCode();
+    _scanBarcode();
   }
 
-  Future<void> _scanQRCode() async {
+  Future<void> _scanBarcode() async {
     try {
-      // Start the QR-code scan.
-      final texture = await FlutterQrScan.start();
+      // Start the barcode scan.
+      final texture = await FlutterNativeBarcodeScanner.start();
       if (texture == null) {
         // Handle error...
 
-        // Stop the QR-code scan process.
-        await FlutterQrScan.stop();
+        // Stop the barcode scan process.
+        await FlutterNativeBarcodeScanner.stop();
         return;
       }
 
       // Add the returned texture to the textureStream.
       _textureStream.add(texture);
 
-      // Wait until the first QR code comes in.
-      final code = await FlutterQrScan.getCode();
+      // Wait until the first barcode comes in.
+      final code = await FlutterNativeBarcodeScanner.getCode();
       if (code == null) {
         // Handle error...
 
-        // Stop the QR-code scan process.
-        await FlutterQrScan.stop();
+        // Stop the barcode scan process.
+        await FlutterNativeBarcodeScanner.stop();
         return;
       }
 
@@ -51,17 +51,17 @@ class _FlutterQrScanExampleState extends State<FlutterQrScanExample> {
     } catch (e) {
       // Handle error...
     } finally {
-      // Stop the QR-code scan process.
-      await FlutterQrScan.stop();
+      // Stop the barcode scan process.
+      await FlutterNativeBarcodeScanner.stop();
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('QR-code scan example')),
+      appBar: AppBar(title: Text('barcode scan example')),
       body: Center(
-        child: StreamBuilder<FlutterQrScanTexture>(
+        child: StreamBuilder<FlutterNativeBarcodeScannerTexture>(
           stream: _textureStream.stream,
           builder: (context, snapshot) {
             final texture = snapshot.data;
@@ -69,7 +69,7 @@ class _FlutterQrScanExampleState extends State<FlutterQrScanExample> {
               return CircularProgressIndicator();
             }
 
-            return FlutterQrScanPreview(texture: texture);
+            return FlutterNativeBarcodeScannerPreview(texture: texture);
           },
         ),
       ),

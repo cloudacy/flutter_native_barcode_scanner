@@ -1,16 +1,16 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter/services.dart';
 
-/// The resulting object, when calling `FlutterQrScan.start()`.
+/// The resulting object, when calling `FlutterNativeBarcodeScanner.start()`.
 ///
 /// This object holds the textureId for the `Texture` widget as well as the
 /// texture `width` and `height` in pixels.
 ///
 /// The texture size properties `width` and `height` may be `null`. If so, we recommend to use an
 /// `AspectRatio` widget with an aspectRatio of `1` instead.
-class FlutterQrScanTexture {
+class FlutterNativeBarcodeScannerTexture {
   /// The id to be used at a `Texture` widget.
   /// ```dart
   /// Texture(textureId: texture.id)
@@ -27,26 +27,26 @@ class FlutterQrScanTexture {
   /// If null, we recommended to use an aspect ratio of 1:1 instead.
   double? height;
 
-  FlutterQrScanTexture._({
+  FlutterNativeBarcodeScannerTexture._({
     required this.id,
     required this.width,
     required this.height,
   });
 }
 
-/// This class allows to start and stop the QR-code scan process,
+/// This class allows to start and stop the barcode scan process,
 /// by using the static `start()` and `stop()` methods.
 ///
-/// It also allows to receive QR-codes, by calling `getCode()`.
-class FlutterQrScan {
-  static const MethodChannel _channel = MethodChannel('flutter_qr_scan');
+/// It also allows to receive barcodes, by calling `getCode()`.
+class FlutterNativeBarcodeScanner {
+  static const MethodChannel _channel = MethodChannel('flutter_native_barcode_scanner');
 
   static StreamController<Object?>? _controller;
 
-  /// Creates a new code stream and tries to start the QR-code scan.
+  /// Creates a new code stream and tries to start the barcode scan.
   ///
   /// May throw a `PlatformException`.
-  static Future<FlutterQrScanTexture?> start() async {
+  static Future<FlutterNativeBarcodeScannerTexture?> start() async {
     // Create a new StreamController to receive codes from the platform.
     // ignore: close_sinks
     final controller = StreamController<Object?>();
@@ -73,22 +73,22 @@ class FlutterQrScan {
       return null;
     }
 
-    return FlutterQrScanTexture._(
+    return FlutterNativeBarcodeScannerTexture._(
       id: textureId,
       width: (result['previewWidth'] as num?)?.toDouble(),
       height: (result['previewHeight'] as num?)?.toDouble(),
     );
   }
 
-  /// Stops a currently running QR-code scan.
+  /// Stops a currently running barcode scan.
   static Future<bool> stop() async {
-    // Check if a QR-code scan is running.
+    // Check if a barcode scan is running.
     final controller = _controller;
     if (controller == null) {
       return false;
     }
 
-    // Close the stream controller, since we no receive any QR codes.
+    // Close the stream controller, since we no receive any barcodes.
     controller.close();
     _controller = null;
 
@@ -96,10 +96,10 @@ class FlutterQrScan {
     return (await _channel.invokeMethod<bool>('stop')) ?? false;
   }
 
-  /// Wait for a QR-code to be returned by the platform.
+  /// Wait for a barcode to be returned by the platform.
   ///
   /// Returns `null` if no code got sent from the platform (e.g. the process got canceled)
-  /// or if the QR-code scan process is not running.
+  /// or if the barcode scan process is not running.
   static Future<Object?> getCode() {
     final stream = _controller?.stream;
     if (stream == null) {
@@ -114,19 +114,19 @@ class FlutterQrScan {
   }
 }
 
-/// `FlutterQrScanPreview` provides a quick option to render a QR-code scan texture, by using the `Texture` widget, to the screen.
+/// `FlutterNativeBarcodeScannerPreview` provides a quick option to render a barcode scan texture, by using the `Texture` widget, to the screen.
 ///
 /// It uses an `AspectRatio` widget with an aspectRatio, based on the `width` and `height` properties
 /// of the provided `texture` argument.
-class FlutterQrScanPreview extends StatelessWidget {
-  final FlutterQrScanTexture _texture;
+class FlutterNativeBarcodeScannerPreview extends StatelessWidget {
+  final FlutterNativeBarcodeScannerTexture _texture;
 
-  /// Create a new `FlutterQrScanPreview` instance.
+  /// Create a new `FlutterNativeBarcodeScannerPreview` instance.
   ///
-  /// Requires a `FlutterQrScanTexture` to draw a `Texture` to the screen, based on it's properties.
-  const FlutterQrScanPreview({
+  /// Requires a `FlutterNativeBarcodeScannerTexture` to draw a `Texture` to the screen, based on it's properties.
+  const FlutterNativeBarcodeScannerPreview({
     Key? key,
-    required FlutterQrScanTexture texture,
+    required FlutterNativeBarcodeScannerTexture texture,
   })   : _texture = texture,
         super(key: key);
 

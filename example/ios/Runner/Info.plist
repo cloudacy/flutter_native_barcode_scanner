@@ -11,7 +11,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>flutter_qr_scan_example</string>
+	<string>flutter_native_barcode_scanner_example</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -42,6 +42,6 @@
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
 	<key>NSCameraUsageDescription</key>
-<string>The camera is needed to capture qr codes using the back camera.</string>
+	<string>The camera is needed to capture barcodes by using the camera.</string>
 </dict>
 </plist>

@@ -1,4 +1,4 @@
-package io.cloudacy.flutter_qr_scan
+package io.cloudacy.flutter_native_barcode_scanner
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -29,22 +29,23 @@ import io.flutter.view.TextureRegistry
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
-/** FlutterQrScanPlugin */
-class FlutterQrScanPlugin(): FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry.RequestPermissionsResultListener {
+/** FlutterNativeBarcodeScannerPlugin */
+class FlutterNativeBarcodeScannerPlugin(): FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry.RequestPermissionsResultListener {
   private lateinit var channel : MethodChannel
   private var activity : Activity? = null
   private lateinit var textureRegistry: TextureRegistry
 
-  // Needs to be an app-defined int constant. This value is the hex representation of "QRS" with one bit cut of to only use lower 16 bit (if used in a android.support.v4.app.FragmentActivity) as required.
+  // Needs to be an app-defined int constant. This value is the hex representation of "BS".
+  // It only uses 16 bits to meet requirements (android.support.v4.app.FragmentActivity).
   // It defines the type of permission request. It will be used at the callback to check, which type of request it was.
-  private val cameraPermissionRequestCode = 51525
+  private val cameraPermissionRequestCode = 0x4253
   private var requestCameraPermissionResult: Result? = null
 
   private var cameraProvider: ProcessCameraProvider? = null
   private var cameraExecutor: ExecutorService? = null
 
   override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
-    channel = MethodChannel(flutterPluginBinding.binaryMessenger, "flutter_qr_scan")
+    channel = MethodChannel(flutterPluginBinding.binaryMessenger, "flutter_native_barcode_scanner")
     channel.setMethodCallHandler(this)
 
     textureRegistry = flutterPluginBinding.textureRegistry

@@ -1,26 +1,26 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_qr_scan/flutter_qr_scan.dart';
+import 'package:flutter_native_barcode_scanner/flutter_native_barcode_scanner.dart';
 
 void main() {
-  runApp(MaterialApp(home: FlutterQrScanExample()));
+  runApp(MaterialApp(home: FlutterNativeBarcodeScannerExample()));
 }
 
-class FlutterQrScanExample extends StatefulWidget {
+class FlutterNativeBarcodeScannerExample extends StatefulWidget {
   @override
-  _FlutterQrScanExampleState createState() => _FlutterQrScanExampleState();
+  _FlutterNativeBarcodeScannerExampleState createState() => _FlutterNativeBarcodeScannerExampleState();
 }
 
-class _FlutterQrScanExampleState extends State<FlutterQrScanExample> {
-  final _textureStream = StreamController<FlutterQrScanTexture>();
+class _FlutterNativeBarcodeScannerExampleState extends State<FlutterNativeBarcodeScannerExample> {
+  final _textureStream = StreamController<FlutterNativeBarcodeScannerTexture>();
   final _codeStream = StreamController<Object?>();
 
   @override
   void initState() {
     super.initState();
 
-    _scanQRCode();
+    _scanBarcode();
   }
 
   Future<void> _showErrorDialog({
@@ -45,15 +45,15 @@ class _FlutterQrScanExampleState extends State<FlutterQrScanExample> {
     );
   }
 
-  Future<void> _scanQRCode() async {
+  Future<void> _scanBarcode() async {
     try {
-      // Start the QR-code scan.
-      final texture = await FlutterQrScan.start();
+      // Start the barcode scan.
+      final texture = await FlutterNativeBarcodeScanner.start();
       if (texture == null) {
-        _showErrorDialog(content: const Text('Unable to start the QR-code scan.'));
+        _showErrorDialog(content: const Text('Unable to start the barcode scan.'));
 
-        // Stop the QR-code scan process.
-        await FlutterQrScan.stop();
+        // Stop the barcode scan process.
+        await FlutterNativeBarcodeScanner.stop();
         return;
       }
 
@@ -61,12 +61,12 @@ class _FlutterQrScanExampleState extends State<FlutterQrScanExample> {
       _textureStream.add(texture);
 
       // Wait for a code.
-      final code = await FlutterQrScan.getCode();
+      final code = await FlutterNativeBarcodeScanner.getCode();
       if (code == null) {
-        _showErrorDialog(content: const Text('Unable to get a QR-code.'));
+        _showErrorDialog(content: const Text('Unable to get a barcode.'));
 
-        // Stop the QR-code scan process.
-        await FlutterQrScan.stop();
+        // Stop the barcode scan process.
+        await FlutterNativeBarcodeScanner.stop();
         return;
       }
 
@@ -75,8 +75,8 @@ class _FlutterQrScanExampleState extends State<FlutterQrScanExample> {
     } catch (e) {
       _showErrorDialog(content: Text('Error: $e'));
     } finally {
-      // Stop the QR-code scan process.
-      await FlutterQrScan.stop();
+      // Stop the barcode scan process.
+      await FlutterNativeBarcodeScanner.stop();
     }
   }
 
@@ -84,7 +84,7 @@ class _FlutterQrScanExampleState extends State<FlutterQrScanExample> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('QR-code scan example'),
+        title: const Text('barcode scan example'),
       ),
       body: SafeArea(
         child: Column(
@@ -93,7 +93,7 @@ class _FlutterQrScanExampleState extends State<FlutterQrScanExample> {
           children: [
             Expanded(
               child: Center(
-                child: StreamBuilder<FlutterQrScanTexture>(
+                child: StreamBuilder<FlutterNativeBarcodeScannerTexture>(
                   stream: _textureStream.stream,
                   builder: (context, snapshot) {
                     final texture = snapshot.data;
@@ -101,7 +101,7 @@ class _FlutterQrScanExampleState extends State<FlutterQrScanExample> {
                       return const CircularProgressIndicator();
                     }
 
-                    return FlutterQrScanPreview(texture: texture);
+                    return FlutterNativeBarcodeScannerPreview(texture: texture);
                   },
                 ),
               ),

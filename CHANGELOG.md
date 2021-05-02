@@ -1,3 +1,5 @@
+## 0.3.0
+
 ## 0.2.0
 
 - feat!: introduce FlutterQrScan.getCode ([b9e08f7](https://github.com/cloudacy/flutter_qr_scan/commit/b9e08f7dc9fea78b74cff142659af89ad0be4f00))

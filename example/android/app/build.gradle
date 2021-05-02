@@ -32,12 +32,8 @@ android {
         main.java.srcDirs += 'src/main/kotlin'
     }
 
-    lintOptions {
-        disable 'InvalidPackage'
-    }
-
     defaultConfig {
-        applicationId "io.cloudacy.flutter_qr_scan_example"
+        applicationId "io.cloudacy.flutter_native_barcode_scanner_example"
         minSdkVersion 21
         targetSdkVersion 30
         versionCode flutterVersionCode.toInteger()

@@ -1,15 +1,15 @@
 #
 # To learn more about a Podspec see http://guides.cocoapods.org/syntax/podspec.html.
-# Run `pod lib lint flutter_qr_scan.podspec' to validate before publishing.
+# Run `pod lib lint flutter_native_barcode_scanner.podspec` to validate before publishing.
 #
 Pod::Spec.new do |s|
-  s.name             = 'flutter_qr_scan'
-  s.version          = '0.2.0'
-  s.summary          = 'A lightweight Flutter QR-code scan plugin for Android and iOS.'
+  s.name             = 'flutter_native_barcode_scanner'
+  s.version          = '0.3.0'
+  s.summary          = 'A barcode scanner for flutter, using platform native APIs.'
   s.description      = <<-DESC
-  A lightweight Flutter QR-code scan plugin for Android and iOS.
+A barcode scanner for flutter, using platform native APIs.
                        DESC
-  s.homepage         = 'http://example.com'
+  s.homepage         = 'https://cloudacy.com'
   s.license          = { :file => '../LICENSE' }
   s.author           = { 'cloudacy OG' => 'office@cloudacy.com' }
   s.source           = { :path => '.' }

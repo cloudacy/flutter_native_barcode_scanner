@@ -1,16 +1,14 @@
 import Flutter
 import UIKit
 import AVFoundation
-import CoreMotion
-import libkern
 
-public enum FLQRScanError : Error {
+public enum FLNativeBarcodeScannerError : Error {
   case access
   case noVideoDevice
   case noVideoDeviceInput
 }
 
-public class FLQRScanCamera:
+public class FLNativeBarcodeScannerCamera:
   NSObject,
   AVCaptureVideoDataOutputSampleBufferDelegate,
   AVCaptureMetadataOutputObjectsDelegate,
@@ -30,7 +28,7 @@ public class FLQRScanCamera:
   private let metadataOutput = AVCaptureMetadataOutput()
   private let feedbackGenerator = UINotificationFeedbackGenerator()
   
-  private let queue = DispatchQueue(label: "io.cloudacy.flutter_qr_scan")
+  private let queue = DispatchQueue(label: "io.cloudacy.flutter_native_barcode_scanner")
   
   public init(methodChannel: FlutterMethodChannel) {
     self.methodChannel = methodChannel
@@ -41,7 +39,7 @@ public class FLQRScanCamera:
   }
   
   public func startScanning(
-    completion: @escaping (Result<Bool, FLQRScanError>) -> Void
+    completion: @escaping (Result<Bool, FLNativeBarcodeScannerError>) -> Void
   ) {
     // request access
     AVCaptureDevice.requestAccess(for: .video) { (granted) in
@@ -84,7 +82,7 @@ public class FLQRScanCamera:
     }
   }
   
-  private func configureSession() -> Result<Bool, FLQRScanError> {
+  private func configureSession() -> Result<Bool, FLNativeBarcodeScannerError> {
     captureSession.beginConfiguration()
     captureSession.sessionPreset = quality
     
@@ -119,7 +117,7 @@ public class FLQRScanCamera:
       captureSession.addOutput(metadataOutput)
     }
     
-    // support qr codes
+    // Define supported barcodes.
     metadataOutput.setMetadataObjectsDelegate(self, queue: queue)
     metadataOutput.metadataObjectTypes = [.qr, .ean8, .ean13, .code39, .code93, .code128, .pdf417, .upce, .dataMatrix]
     
@@ -170,12 +168,12 @@ public class FLQRScanCamera:
   }
 }
 
-public class FLQRScan: NSObject, FlutterPlugin {
+public class FLNativeBarcodeScanner: NSObject, FlutterPlugin {
   private let registry: FlutterTextureRegistry
   private let messenger: FlutterBinaryMessenger
   private let methodChannel: FlutterMethodChannel
   
-  private let cam: FLQRScanCamera
+  private let cam: FLNativeBarcodeScannerCamera
   
   init(
     registry: FlutterTextureRegistry,
@@ -185,12 +183,12 @@ public class FLQRScan: NSObject, FlutterPlugin {
     self.registry = registry
     self.messenger = messenger
     self.methodChannel = methodChannel
-    self.cam = FLQRScanCamera(methodChannel: methodChannel)
+    self.cam = FLNativeBarcodeScannerCamera(methodChannel: methodChannel)
   }
   
   public class func register(with registrar: FlutterPluginRegistrar) {
-    let channel = FlutterMethodChannel(name: "flutter_qr_scan", binaryMessenger: registrar.messenger())
-    let instance = FLQRScan(registry: registrar.textures(), messenger: registrar.messenger(), methodChannel: channel)
+    let channel = FlutterMethodChannel(name: "flutter_native_barcode_scanner", binaryMessenger: registrar.messenger())
+    let instance = FLNativeBarcodeScanner(registry: registrar.textures(), messenger: registrar.messenger(), methodChannel: channel)
     
     registrar.addMethodCallDelegate(instance, channel: channel)
   }
@@ -198,7 +196,7 @@ public class FLQRScan: NSObject, FlutterPlugin {
   public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
     switch call.method {
     case "start":
-      initializeQrScanner(call: call, result: result)
+      initializeScanner(call: call, result: result)
       break
     case "stop":
       // Remove the orientation observer.
@@ -230,7 +228,7 @@ public class FLQRScan: NSObject, FlutterPlugin {
     ]
   }
   
-  public func initializeQrScanner(call: FlutterMethodCall, result: @escaping FlutterResult) -> Void {
+  public func initializeScanner(call: FlutterMethodCall, result: @escaping FlutterResult) -> Void {
     self.cam.startScanning() { r in
       switch r {
       case .failure(let error):
