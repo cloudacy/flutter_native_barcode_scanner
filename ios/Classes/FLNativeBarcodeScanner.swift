@@ -79,6 +79,11 @@ public class FLNativeBarcodeScannerCamera:
     
     if captureSession.canAddOutput(videoOutput) {
       captureSession.addOutput(videoOutput)
+      
+      // Set video orientation to portrait.
+      if let connection = videoOutput.connection(with: AVFoundation.AVMediaType.video) {
+        connection.videoOrientation = .portrait
+      }
     }
     
     if captureSession.canAddOutput(metadataOutput) {
