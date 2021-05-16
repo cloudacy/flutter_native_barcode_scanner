@@ -106,21 +106,19 @@ class _FlutterNativeBarcodeScannerExampleState extends State<FlutterNativeBarcod
       ),
       body: SafeArea(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Expanded(
-              child: Center(
-                child: ValueListenableBuilder<FlutterNativeBarcodeScannerTexture?>(
-                  valueListenable: _texture,
-                  builder: (context, texture, _) {
-                    if (texture == null) {
-                      return const CircularProgressIndicator();
-                    }
+            Center(
+              child: ValueListenableBuilder<FlutterNativeBarcodeScannerTexture?>(
+                valueListenable: _texture,
+                builder: (context, texture, _) {
+                  if (texture == null) {
+                    return const CircularProgressIndicator();
+                  }
 
-                    return FlutterNativeBarcodeScannerPreview(texture: texture);
-                  },
-                ),
+                  return FlutterNativeBarcodeScannerPreview(texture: texture);
+                },
               ),
             ),
             Padding(
