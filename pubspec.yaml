@@ -1,6 +1,6 @@
 name: flutter_native_barcode_scanner
 description: A barcode scanner for Flutter, using platform native APIs.
-version: 0.4.1
+version: 0.4.2
 author: cloudacy OG
 homepage: https://cloudacy.com
 
