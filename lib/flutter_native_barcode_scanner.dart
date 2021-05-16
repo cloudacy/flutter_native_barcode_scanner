@@ -106,27 +106,54 @@ class FlutterNativeBarcodeScanner {
   }
 }
 
-/// `FlutterNativeBarcodeScannerPreview` provides a quick option to render a barcode scan texture, by using the `Texture` widget, to the screen.
-///
-/// It uses an `AspectRatio` widget with an aspectRatio, based on the `width` and `height` properties
-/// of the provided `texture` argument.
+/// [FlutterNativeBarcodeScannerPreview] provides an easy option to render a camera preview.
+/// Provide an aspectRatio to optionally crop the preview to given aspect ratio.
 class FlutterNativeBarcodeScannerPreview extends StatelessWidget {
   final FlutterNativeBarcodeScannerTexture _texture;
 
-  /// Create a new `FlutterNativeBarcodeScannerPreview` instance.
+  /// Optional cropped aspect ratio. If set, the preview gets cropped to given aspect ratio.
+  final double? aspectRatio;
+
+  /// Create a new [FlutterNativeBarcodeScannerPreview] instance.
   ///
-  /// Requires a `FlutterNativeBarcodeScannerTexture` to draw a `Texture` to the screen, based on it's properties.
+  /// Requires a [FlutterNativeBarcodeScannerTexture] to render the preview to the screen.
+  ///
+  /// Provide an optional `aspectRatio` to define a custom cropped preview aspect ratio.
   const FlutterNativeBarcodeScannerPreview({
     Key? key,
     required FlutterNativeBarcodeScannerTexture texture,
-  })   : _texture = texture,
+    this.aspectRatio,
+  })  : _texture = texture,
         super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return AspectRatio(
-      aspectRatio: (_texture.height ?? 1) / (_texture.width ?? 1),
-      child: Texture(textureId: _texture.id),
+    if (aspectRatio == null) {
+      return AspectRatio(
+        aspectRatio: (_texture.height ?? 1) / (_texture.width ?? 1),
+        child: Texture(
+          textureId: _texture.id,
+        ),
+      );
+    }
+
+    final size = MediaQuery.of(context).size.width;
+    return Container(
+      width: size,
+      height: size / aspectRatio!,
+      child: ClipRect(
+        child: OverflowBox(
+          alignment: Alignment.center,
+          child: FittedBox(
+            fit: BoxFit.fitWidth,
+            child: Container(
+              width: size,
+              height: size / ((_texture.height ?? 1) / (_texture.width ?? 1)),
+              child: Texture(textureId: _texture.id),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
