@@ -92,7 +92,7 @@ public class FLNativeBarcodeScannerCamera:
     
     // Define supported barcodes.
     metadataOutput.setMetadataObjectsDelegate(self, queue: queue)
-    metadataOutput.metadataObjectTypes = [.qr, .ean8, .ean13, .code39, .code93, .code128, .pdf417, .upce, .dataMatrix]
+    metadataOutput.metadataObjectTypes = [.qr, .ean8, .ean13, .code39, .code39Mod43, .code93, .code128, .pdf417, .itf14, .upce, .dataMatrix]
     
     captureSession.commitConfiguration()
     
