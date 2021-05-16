@@ -16,7 +16,7 @@ public class FLNativeBarcodeScannerCamera:
 {
   public  let captureSession = AVCaptureSession()
   
-  private let quality = AVCaptureSession.Preset.medium
+  private let quality = AVCaptureSession.Preset.high
   private var pixelBuffer: CVPixelBuffer?
   
   public  var previewSize = CGSize(width: 1920, height: 1080)
