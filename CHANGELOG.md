@@ -2,6 +2,20 @@
 
 - refactor!: remove iOS orientation handling ([9205a41](https://github.com/cloudacy/flutter_native_barcode_scanner/commit/9205a4146b08aa651ddfebce91a60a1d8316d2a8))
 
+### 0.4.1
+
+- fix(iOS): fix video orientation ([40a70a0](https://github.com/cloudacy/flutter_native_barcode_scanner/commit/40a70a0420cfc0a5d44a47b3c5d089d1e7a7cddc))
+
+### 0.4.2
+
+- fix(iOS): set capture quality to high ([c17ca76](https://github.com/cloudacy/flutter_native_barcode_scanner/commit/c17ca76cb67f7b8cb05aff474fab428f03e61656))
+- feat(iOS): add support for code39mod43 and itf14 ([5d0c90a](https://github.com/cloudacy/flutter_native_barcode_scanner/commit/5d0c90a62b940e4fc7cb5f0538dd552c9312b125))
+
+### 0.4.3
+
+- refactor: mark BarcodeScannerTexture fields final These values shouldn't be mutated ([b3ce65d](https://github.com/cloudacy/flutter_native_barcode_scanner/commit/b3ce65dc9287c340d81de79767944db5b947dbd4))
+- feat: allow to crop previews ([f9b4bd3](https://github.com/cloudacy/flutter_native_barcode_scanner/commit/f9b4bd3134c77bd7cd848aef2b8b216c7c639e0a))
+
 ## 0.3.0
 
 - refactor!: rename getCode to getBarcode ([c6fc199](https://github.com/cloudacy/flutter_native_barcode_scanner/commit/c6fc199fd024c51a80bc69bc7346e23624c86221))

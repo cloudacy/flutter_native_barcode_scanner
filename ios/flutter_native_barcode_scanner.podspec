@@ -4,7 +4,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'flutter_native_barcode_scanner'
-  s.version          = '0.4.2'
+  s.version          = '0.4.3'
   s.summary          = 'A barcode scanner for Flutter, using platform native APIs.'
   s.description      = <<-DESC
 A barcode scanner for Flutter, using platform native APIs.
