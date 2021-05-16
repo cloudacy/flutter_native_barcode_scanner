@@ -5,29 +5,21 @@ import 'package:flutter/services.dart';
 
 /// The resulting object, when calling `FlutterNativeBarcodeScanner.start()`.
 ///
-/// This object holds the textureId for the `Texture` widget as well as the
-/// texture `width` and `height` in pixels.
-///
-/// The texture size properties `width` and `height` may be `null`. If so, we recommend to use an
-/// `AspectRatio` widget with an aspectRatio of `1` instead.
+/// This object holds camera preview details: textureId for the `Texture` widget, texture `width` and `height` in pixels.
 class FlutterNativeBarcodeScannerTexture {
   /// The id to be used at a `Texture` widget.
   /// ```dart
   /// Texture(textureId: texture.id)
   /// ```
-  int id;
+  final int id;
 
-  /// Holds the texture width in pixels.
-  ///
-  /// If null, we recommend to use an aspect ratio of 1:1 instead.
-  double? width;
+  /// Holds the texture width in pixels. Can be null.
+  final double? width;
 
-  /// Holds the texture height in pixels.
-  ///
-  /// If null, we recommended to use an aspect ratio of 1:1 instead.
-  double? height;
+  /// Holds the texture height in pixels. Can be null.
+  final double? height;
 
-  FlutterNativeBarcodeScannerTexture._({
+  const FlutterNativeBarcodeScannerTexture._({
     required this.id,
     required this.width,
     required this.height,
