@@ -13,8 +13,8 @@ class FlutterNativeBarcodeScannerExample extends StatefulWidget {
 }
 
 class _FlutterNativeBarcodeScannerExampleState extends State<FlutterNativeBarcodeScannerExample> {
-  final _textureStream = StreamController<FlutterNativeBarcodeScannerTexture>();
-  final _codeStream = StreamController<Object?>();
+  final _texture = ValueNotifier<FlutterNativeBarcodeScannerTexture?>(null);
+  final _code = ValueNotifier<Object?>(null);
 
   @override
   void initState() {
@@ -58,7 +58,7 @@ class _FlutterNativeBarcodeScannerExampleState extends State<FlutterNativeBarcod
       }
 
       // Add the returned texture to the textureStream.
-      _textureStream.add(texture);
+      _texture.value = texture;
 
       // Wait for a code.
       final code = await FlutterNativeBarcodeScanner.getBarcode();
@@ -71,7 +71,7 @@ class _FlutterNativeBarcodeScannerExampleState extends State<FlutterNativeBarcod
       }
 
       // Add the code to the _codeStream.
-      _codeStream.add(code);
+      _code.value = code;
     } catch (e) {
       _showErrorDialog(content: Text('Error: $e'));
     } finally {
@@ -85,6 +85,24 @@ class _FlutterNativeBarcodeScannerExampleState extends State<FlutterNativeBarcod
     return Scaffold(
       appBar: AppBar(
         title: const Text('barcode scan example'),
+        actions: [
+          ValueListenableBuilder<Object?>(
+            valueListenable: _code,
+            builder: (context, code, _) {
+              if (code == null) return SizedBox(width: 0);
+
+              return IconButton(
+                onPressed: () {
+                  _texture.value = null;
+                  _code.value = null;
+
+                  _scanBarcode();
+                },
+                icon: Icon(Icons.replay_outlined),
+              );
+            },
+          ),
+        ],
       ),
       body: SafeArea(
         child: Column(
@@ -93,10 +111,9 @@ class _FlutterNativeBarcodeScannerExampleState extends State<FlutterNativeBarcod
           children: [
             Expanded(
               child: Center(
-                child: StreamBuilder<FlutterNativeBarcodeScannerTexture>(
-                  stream: _textureStream.stream,
-                  builder: (context, snapshot) {
-                    final texture = snapshot.data;
+                child: ValueListenableBuilder<FlutterNativeBarcodeScannerTexture?>(
+                  valueListenable: _texture,
+                  builder: (context, texture, _) {
                     if (texture == null) {
                       return const CircularProgressIndicator();
                     }
@@ -108,14 +125,9 @@ class _FlutterNativeBarcodeScannerExampleState extends State<FlutterNativeBarcod
             ),
             Padding(
               padding: const EdgeInsets.all(8),
-              child: StreamBuilder<Object?>(
-                stream: _codeStream.stream,
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState != ConnectionState.active) {
-                    return const Text('waiting for code ...');
-                  }
-
-                  final code = snapshot.data;
+              child: ValueListenableBuilder<Object?>(
+                valueListenable: _code,
+                builder: (context, code, _) {
                   if (code == null) {
                     return const Text('waiting for code ...');
                   }
