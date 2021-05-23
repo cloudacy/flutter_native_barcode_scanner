@@ -149,10 +149,11 @@ class FlutterNativeBarcodeScannerPlugin(): FlutterPlugin, MethodCallHandler, Act
   }
 
   private fun stop(result: Result) {
-    val cameraProvider = cameraProvider ?: return
+    // stop all use cases for this plugin
+    cameraProvider?.unbindAll()
 
-    // stop all use cases for this plugin.
-    cameraProvider.unbindAll()
+    // stop the cameraExecutor
+    cameraExecutor?.shutdown()
 
     result.success(true)
   }
@@ -180,7 +181,7 @@ class FlutterNativeBarcodeScannerPlugin(): FlutterPlugin, MethodCallHandler, Act
       val cameraProvider = cameraProviderFuture.get()
       this.cameraProvider = cameraProvider
 
-      // https://stackoverflow.com/questions/56163568/how-to-bind-preview-and-texture-in-camerax
+      // Create a surface texture
       val surfaceTextureEntry = textureRegistry.createSurfaceTexture()
       val surfaceTexture = surfaceTextureEntry.surfaceTexture()
 
