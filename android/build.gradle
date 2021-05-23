@@ -40,7 +40,7 @@ dependencies {
 
     // CameraX core library using the camera2 implementation
     // https://developer.android.com/jetpack/androidx/releases/camera
-    def camerax_version = "1.0.0-rc04"
+    def camerax_version = "1.0.0"
     implementation "androidx.camera:camera-camera2:${camerax_version}"
     implementation "androidx.camera:camera-lifecycle:${camerax_version}"
 
