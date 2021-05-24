@@ -21,6 +21,10 @@
 - chore(android): use stable camerax dependency ([14651bf](https://github.com/cloudacy/flutter_native_barcode_scanner/commit/14651bf83e02a021941769cf96de01ebc1cc74ff))
 - fix(android): add missing cameraExecutor shutdown ([450c877](https://github.com/cloudacy/flutter_native_barcode_scanner/commit/450c877a72b209775b2f1d9860aaa8dc83cc322c))
 
+#### 0.4.5
+
+- chore: update dependencies ([46ca10f](https://github.com/cloudacy/flutter_native_barcode_scanner/commit/46ca10f4eda5a47418301198132763eb70ef2d53))
+
 ## 0.3.0
 
 - refactor!: rename getCode to getBarcode ([c6fc199](https://github.com/cloudacy/flutter_native_barcode_scanner/commit/c6fc199fd024c51a80bc69bc7346e23624c86221))
