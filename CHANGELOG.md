@@ -16,6 +16,11 @@
 - refactor: mark BarcodeScannerTexture fields final These values shouldn't be mutated ([b3ce65d](https://github.com/cloudacy/flutter_native_barcode_scanner/commit/b3ce65dc9287c340d81de79767944db5b947dbd4))
 - feat: allow to crop previews ([f9b4bd3](https://github.com/cloudacy/flutter_native_barcode_scanner/commit/f9b4bd3134c77bd7cd848aef2b8b216c7c639e0a))
 
+### 0.4.4
+
+- chore(android): use stable camerax dependency ([14651bf](https://github.com/cloudacy/flutter_native_barcode_scanner/commit/14651bf83e02a021941769cf96de01ebc1cc74ff))
+- fix(android): add missing cameraExecutor shutdown ([450c877](https://github.com/cloudacy/flutter_native_barcode_scanner/commit/450c877a72b209775b2f1d9860aaa8dc83cc322c))
+
 ## 0.3.0
 
 - refactor!: rename getCode to getBarcode ([c6fc199](https://github.com/cloudacy/flutter_native_barcode_scanner/commit/c6fc199fd024c51a80bc69bc7346e23624c86221))
