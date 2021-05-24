@@ -4,6 +4,7 @@ import re
 import subprocess
 
 pubspecRawContent = ''
+podspecRawContent = ''
 version = ''
 
 # read the current version number
@@ -11,6 +12,10 @@ with open('pubspec.yaml', 'r') as pubspec:
     pubspecRawContent = pubspec.read()
     match = re.search(r'version: (\d+\.\d+\.\d+)', pubspecRawContent)
     version = match.group(1)
+
+# read the current podspec content
+with open('ios/flutter_native_barcode_scanner.podspec', 'r') as podspec:
+    podspecRawContent = podspec.read()
 
 # Ask for a new version number
 newVersion = input('New version number: [%s] ' % (version))
@@ -30,18 +35,32 @@ else:
 pubspecRawContent = re.sub(r'version: (\d+\.\d+\.\d+)', 'version: %s' %
                            (newVersion), pubspecRawContent)
 
+podspecRawContent = re.sub(r'\'(\d+\.\d+\.\d+)\'', '\'%s\'' %
+                           (newVersion), podspecRawContent)
+
 # write the updated pubspec content to the pubspec.yaml file
 with open('pubspec.yaml', 'w') as pubspec:
     pubspec.write(pubspecRawContent)
 
-print('Updated pubspec.yaml! Running "flutter pub get" to update other files.')
+# write the updated podspec content to the iOS podspec file
+with open('ios/flutter_native_barcode_scanner.podspec', 'w') as podspec:
+    podspec.write(podspecRawContent)
 
+print('Updated pubspec.yaml and ios/flutter_native_barcode_scanner.podspec! Running "flutter pub get" to update other files.')
+
+# update lockfiles
 subprocess.run(['flutter', 'pub', 'get'])
 
-print('Staging pubspec.yaml and example/pubspec.lock ...')
+# update example iOS Podfile.lock
+subprocess.run(['pod', 'install'], cwd = 'example/ios')
+
+print('Staging pubspec.yaml, pubspec.lock, ios/flutter_native_barcode_scanner.podspec, example/pubspec.lock, example/ios/Podfile.lock and CHANGELOG.md ...')
 
 subprocess.run(['git', 'add', 'pubspec.yaml'])
+subprocess.run(['git', 'add', 'pubspec.lock'])
+subprocess.run(['git', 'add', 'ios/flutter_native_barcode_scanner.podspec'])
 subprocess.run(['git', 'add', 'example/pubspec.lock'])
+subprocess.run(['git', 'add', 'example/ios/Podfile.lock'])
 subprocess.run(['git', 'add', 'CHANGELOG.md'])
 
 print('Creating version commit and tag ...')
