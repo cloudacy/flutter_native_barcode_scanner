@@ -52,7 +52,12 @@ class _FlutterNativeBarcodeScannerExampleState extends State<FlutterNativeBarcod
   Future<void> _scanBarcode() async {
     try {
       // Start the barcode scan.
-      final texture = await FlutterNativeBarcodeScanner.start();
+      final texture = await FlutterNativeBarcodeScanner.start(
+        formats: [
+          FlutterNativeBarcodeFormat.ean8,
+          FlutterNativeBarcodeFormat.ean13,
+        ],
+      );
       if (texture == null) {
         _showErrorDialog(content: const Text('Unable to start the barcode scan.'));
 

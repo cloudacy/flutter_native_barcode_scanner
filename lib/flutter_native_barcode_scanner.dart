@@ -3,6 +3,36 @@ import 'dart:async';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/services.dart';
 
+/// Enum of available barcode formats, supported on iOS and Android.
+///
+/// - iOS: https://developer.apple.com/documentation/avfoundation/avmetadataobject/objecttype
+/// - Android: https://developers.google.com/android/reference/com/google/mlkit/vision/barcode/common/Barcode.BarcodeFormat
+enum FlutterNativeBarcodeFormat {
+  aztec,
+  code39,
+  code93,
+  code128,
+  ean8,
+  ean13,
+  itf,
+  pdf417,
+  qr,
+  upce,
+}
+
+const _barcodeFormatStringMap = {
+  FlutterNativeBarcodeFormat.aztec: 'aztec',
+  FlutterNativeBarcodeFormat.code39: 'code39',
+  FlutterNativeBarcodeFormat.code93: 'code93',
+  FlutterNativeBarcodeFormat.code128: 'code128',
+  FlutterNativeBarcodeFormat.ean8: 'ean8',
+  FlutterNativeBarcodeFormat.ean13: 'ean13',
+  FlutterNativeBarcodeFormat.itf: 'itf',
+  FlutterNativeBarcodeFormat.pdf417: 'pdf417',
+  FlutterNativeBarcodeFormat.qr: 'qr',
+  FlutterNativeBarcodeFormat.upce: 'upce',
+};
+
 /// The resulting object, when calling `FlutterNativeBarcodeScanner.start()`.
 ///
 /// This object holds camera preview details: textureId for the `Texture` widget, texture `width` and `height` in pixels.
@@ -38,7 +68,9 @@ class FlutterNativeBarcodeScanner {
   /// Creates a new code stream and tries to start the barcode scan.
   ///
   /// May throw a `PlatformException`.
-  static Future<FlutterNativeBarcodeScannerTexture?> start() async {
+  static Future<FlutterNativeBarcodeScannerTexture?> start({
+    List<FlutterNativeBarcodeFormat>? formats,
+  }) async {
     // Create a new StreamController to receive codes from the platform.
     // ignore: close_sinks
     final controller = StreamController<Object?>();
@@ -54,14 +86,16 @@ class FlutterNativeBarcodeScanner {
     });
 
     // Invoke the "start" platform method and return the result.
-    final result = await _channel.invokeMapMethod<String, Object?>('start');
+    final result = await _channel.invokeMapMethod<String, Object?>('start', {
+      if (formats != null) 'formats': formats.map<String>((f) => _barcodeFormatStringMap[f] ?? '').toList(),
+    });
     if (result == null) {
       return null;
     }
 
     // Check the textureId.
     final textureId = result['textureId'];
-    if (!(textureId is int)) {
+    if (textureId is! int) {
       return null;
     }
 
@@ -138,7 +172,7 @@ class FlutterNativeBarcodeScannerPreview extends StatelessWidget {
     }
 
     final size = MediaQuery.of(context).size.width;
-    return Container(
+    return SizedBox(
       width: size,
       height: size / aspectRatio!,
       child: ClipRect(
@@ -146,7 +180,7 @@ class FlutterNativeBarcodeScannerPreview extends StatelessWidget {
           alignment: Alignment.center,
           child: FittedBox(
             fit: BoxFit.fitWidth,
-            child: Container(
+            child: SizedBox(
               width: size,
               height: size / ((_texture.height ?? 1) / (_texture.width ?? 1)),
               child: Texture(textureId: _texture.id),

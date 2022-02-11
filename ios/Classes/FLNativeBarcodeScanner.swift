@@ -8,6 +8,19 @@ public enum FLNativeBarcodeScannerError : Error {
   case noVideoDeviceInput
 }
 
+let FLNativeBarcodeScannerFormats : [String: AVMetadataObject.ObjectType] = [
+  "aztec": .aztec,
+  "code39": .code39,
+  "code93": .code93,
+  "code128": .code128,
+  "ean8": .ean8,
+  "ean13": .ean13,
+  "itf": .itf14,
+  "pdf417": .pdf417,
+  "qr": .qr,
+  "upce": .upce
+]
+
 public class FLNativeBarcodeScannerCamera:
   NSObject,
   AVCaptureVideoDataOutputSampleBufferDelegate,
@@ -38,12 +51,13 @@ public class FLNativeBarcodeScannerCamera:
   }
   
   public func startScanning(
+    formats: [AVMetadataObject.ObjectType],
     completion: @escaping (Result<Bool, FLNativeBarcodeScannerError>) -> Void
   ) {
     // request access
     AVCaptureDevice.requestAccess(for: .video) { (granted) in
       if (granted) {
-        let configureSessionResult = self.configureSession()
+        let configureSessionResult = self.configureSession(formats: formats)
         switch configureSessionResult {
         case .failure(_):
           completion(configureSessionResult)
@@ -59,7 +73,7 @@ public class FLNativeBarcodeScannerCamera:
     }
   }
   
-  private func configureSession() -> Result<Bool, FLNativeBarcodeScannerError> {
+  private func configureSession(formats: [AVMetadataObject.ObjectType]) -> Result<Bool, FLNativeBarcodeScannerError> {
     captureSession.beginConfiguration()
     captureSession.sessionPreset = quality
     
@@ -92,7 +106,7 @@ public class FLNativeBarcodeScannerCamera:
     
     // Define supported barcodes.
     metadataOutput.setMetadataObjectsDelegate(self, queue: queue)
-    metadataOutput.metadataObjectTypes = [.qr, .ean8, .ean13, .code39, .code39Mod43, .code93, .code128, .pdf417, .itf14, .upce, .dataMatrix]
+    metadataOutput.metadataObjectTypes = formats
     
     captureSession.commitConfiguration()
     
@@ -197,7 +211,20 @@ public class FLNativeBarcodeScanner: NSObject, FlutterPlugin {
   }
   
   public func initializeScanner(call: FlutterMethodCall, result: @escaping FlutterResult) -> Void {
-    self.cam.startScanning() { r in
+    var formats: [AVMetadataObject.ObjectType] = [.qr, .ean8, .ean13, .code39, .code93, .code128, .pdf417, .itf14, .upce]
+    
+    // Check for "formats" argument and limit formats, if provided.
+    if let args = call.arguments as? [String: Any], let fmts = args["formats"] as? [String] {
+      formats = []
+      
+      for f in fmts {
+        if let formatObjectType = FLNativeBarcodeScannerFormats[f] {
+          formats.append(formatObjectType)
+        }
+      }
+    }
+    
+    self.cam.startScanning(formats: formats) { r in
       switch r {
       case .failure(let error):
         switch error {
