@@ -16,10 +16,10 @@ public class FLNativeBarcodeScannerCamera:
 {
   public  let captureSession = AVCaptureSession()
   
-  private let quality = AVCaptureSession.Preset.high
+  private let quality = AVCaptureSession.Preset.hd1280x720
   private var pixelBuffer: CVPixelBuffer?
   
-  public  var previewSize = CGSize(width: 1920, height: 1080)
+  public  var previewSize = CGSize(width: 1280, height: 720)
   public  var onFrameAvailable: (() -> Void)?
   public  var methodChannel: FlutterMethodChannel?
   
