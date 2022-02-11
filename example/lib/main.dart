@@ -4,10 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_native_barcode_scanner/flutter_native_barcode_scanner.dart';
 
 void main() {
-  runApp(MaterialApp(home: FlutterNativeBarcodeScannerExample()));
+  runApp(const MaterialApp(home: FlutterNativeBarcodeScannerExample()));
 }
 
 class FlutterNativeBarcodeScannerExample extends StatefulWidget {
+  const FlutterNativeBarcodeScannerExample({
+    Key? key,
+  }) : super(key: key);
+
   @override
   _FlutterNativeBarcodeScannerExampleState createState() => _FlutterNativeBarcodeScannerExampleState();
 }
@@ -89,7 +93,7 @@ class _FlutterNativeBarcodeScannerExampleState extends State<FlutterNativeBarcod
           ValueListenableBuilder<Object?>(
             valueListenable: _code,
             builder: (context, code, _) {
-              if (code == null) return SizedBox(width: 0);
+              if (code == null) return const SizedBox(width: 0);
 
               return IconButton(
                 onPressed: () {
@@ -98,7 +102,7 @@ class _FlutterNativeBarcodeScannerExampleState extends State<FlutterNativeBarcod
 
                   _scanBarcode();
                 },
-                icon: Icon(Icons.replay_outlined),
+                icon: const Icon(Icons.replay_outlined),
               );
             },
           ),
