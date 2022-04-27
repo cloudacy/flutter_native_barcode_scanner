@@ -27,6 +27,9 @@
 
 #### 0.4.6
 
+- chore: update dependencies ([7d65d25](https://github.com/cloudacy/flutter_native_barcode_scanner/commit/7d65d258a64084a4c4d1c8cd80fc7d3944fe68d4))
+- perf(ios): reduce input size to 1280x720 for faster processing ([606addd](https://github.com/cloudacy/flutter_native_barcode_scanner/commit/606addd812c8394cc6fb5829da255853df542156))
+- feat(ios): add barcode format filter ([8645113](https://github.com/cloudacy/flutter_native_barcode_scanner/commit/86451133d5ea238abfb1d9c9cb00effbe09f45f3))
 - fix(android): remove camera feature requirement ([1db476a](https://github.com/cloudacy/flutter_native_barcode_scanner/commit/1db476a2a3ac8fcebc4fe3ce49f832890dddabe7))
 
 ## 0.3.0
