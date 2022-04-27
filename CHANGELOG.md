@@ -25,6 +25,10 @@
 
 - chore: update dependencies ([46ca10f](https://github.com/cloudacy/flutter_native_barcode_scanner/commit/46ca10f4eda5a47418301198132763eb70ef2d53))
 
+#### 0.4.6
+
+- fix(android): remove camera feature requirement ([1db476a](https://github.com/cloudacy/flutter_native_barcode_scanner/commit/1db476a2a3ac8fcebc4fe3ce49f832890dddabe7))
+
 ## 0.3.0
 
 - refactor!: rename getCode to getBarcode ([c6fc199](https://github.com/cloudacy/flutter_native_barcode_scanner/commit/c6fc199fd024c51a80bc69bc7346e23624c86221))
