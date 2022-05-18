@@ -13,7 +13,7 @@ class FlutterNativeBarcodeScannerExample extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  _FlutterNativeBarcodeScannerExampleState createState() => _FlutterNativeBarcodeScannerExampleState();
+  State<FlutterNativeBarcodeScannerExample> createState() => _FlutterNativeBarcodeScannerExampleState();
 }
 
 class _FlutterNativeBarcodeScannerExampleState extends State<FlutterNativeBarcodeScannerExample> {
