@@ -80,7 +80,11 @@ class FlutterNativeBarcodeScannerPlugin(): FlutterPlugin, MethodCallHandler, Act
     cameraProvider?.unbindAll()
   }
 
-  override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>?, grantResults: IntArray?): Boolean {
+  override fun onRequestPermissionsResult(
+    requestCode: Int,
+    permissions: Array<out String>,
+    grantResults: IntArray
+  ): Boolean {
     if (requestCode == cameraPermissionRequestCode) {
       val grantResults = grantResults ?: return false
       if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
