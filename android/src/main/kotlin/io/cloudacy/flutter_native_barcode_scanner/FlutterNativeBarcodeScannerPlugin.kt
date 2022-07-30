@@ -10,7 +10,6 @@ import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.core.util.Consumer
 import androidx.lifecycle.LifecycleOwner
 import com.google.mlkit.vision.barcode.Barcode
 import com.google.mlkit.vision.barcode.BarcodeScanner
@@ -86,7 +85,6 @@ class FlutterNativeBarcodeScannerPlugin(): FlutterPlugin, MethodCallHandler, Act
     grantResults: IntArray
   ): Boolean {
     if (requestCode == cameraPermissionRequestCode) {
-      val grantResults = grantResults ?: return false
       if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
         val requestCameraPermissionResult = requestCameraPermissionResult ?: return false
         start(requestCameraPermissionResult)
@@ -113,7 +111,7 @@ class FlutterNativeBarcodeScannerPlugin(): FlutterPlugin, MethodCallHandler, Act
   private class BarcodeAnalyzer(private val listener: (Barcode) -> Unit) : ImageAnalysis.Analyzer {
     private val barcodeScanner: BarcodeScanner = BarcodeScanning.getClient()
 
-    @SuppressLint("UnsafeExperimentalUsageError")
+    @SuppressLint("UnsafeOptInUsageError")
     override fun analyze(imageProxy: ImageProxy) {
       val mediaImage = imageProxy.image ?: return
       val image = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
@@ -198,7 +196,7 @@ class FlutterNativeBarcodeScannerPlugin(): FlutterPlugin, MethodCallHandler, Act
             val resolution = it.resolution
             surfaceTexture.setDefaultBufferSize(resolution.width, resolution.height)
             val surface = Surface(surfaceTexture)
-            it.provideSurface(surface, ContextCompat.getMainExecutor(activity.baseContext), Consumer {})
+            it.provideSurface(surface, ContextCompat.getMainExecutor(activity.baseContext), {})
           }
         }
 
