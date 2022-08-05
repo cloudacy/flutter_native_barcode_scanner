@@ -4,6 +4,8 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.pm.PackageManager
+import android.graphics.Rect
+import android.util.Size
 import android.view.Surface
 import androidx.annotation.NonNull
 import androidx.camera.core.*
@@ -27,6 +29,10 @@ import io.flutter.plugin.common.PluginRegistry
 import io.flutter.view.TextureRegistry
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import kotlin.math.absoluteValue
+import kotlin.math.cos
+import kotlin.math.roundToInt
+import kotlin.math.sin
 
 /** FlutterNativeBarcodeScannerPlugin */
 class FlutterNativeBarcodeScannerPlugin(): FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry.RequestPermissionsResultListener {
@@ -38,6 +44,9 @@ class FlutterNativeBarcodeScannerPlugin(): FlutterPlugin, MethodCallHandler, Act
   // It only uses 16 bits to meet requirements (android.support.v4.app.FragmentActivity).
   // It defines the type of permission request. It will be used at the callback to check, which type of request it was.
   private val cameraPermissionRequestCode = 0x4253
+
+  private var scanFrame: List<Double>? = null;
+
   private var requestCameraPermissionResult: Result? = null
 
   private var cameraProvider: ProcessCameraProvider? = null
@@ -97,6 +106,10 @@ class FlutterNativeBarcodeScannerPlugin(): FlutterPlugin, MethodCallHandler, Act
   override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
     when (call.method) {
       "start" -> {
+        if (call.hasArgument("scanFrame")) {
+          scanFrame = call.argument<List<Double>>("scanFrame")
+        }
+
         start(result)
       }
       "stop" -> {
@@ -108,7 +121,7 @@ class FlutterNativeBarcodeScannerPlugin(): FlutterPlugin, MethodCallHandler, Act
     }
   }
 
-  private class BarcodeAnalyzer(private val listener: (Barcode) -> Unit) : ImageAnalysis.Analyzer {
+  private class BarcodeAnalyzer(private val listener: (List<Barcode>, Int, Int) -> Unit) : ImageAnalysis.Analyzer {
     private val barcodeScanner: BarcodeScanner = BarcodeScanning.getClient()
 
     @SuppressLint("UnsafeOptInUsageError")
@@ -118,7 +131,12 @@ class FlutterNativeBarcodeScannerPlugin(): FlutterPlugin, MethodCallHandler, Act
 
       barcodeScanner.process(image)
         .addOnSuccessListener {
-          if (it.isNotEmpty()) listener(it[0])
+          if (it.isNotEmpty()) {
+            val angle = imageProxy.imageInfo.rotationDegrees.toDouble() / 180 * Math.PI
+            val width = (image.width.toDouble() * cos(angle) - image.height.toDouble() * sin(angle)).roundToInt().absoluteValue
+            val height = (image.width.toDouble() * sin(angle) + image.height.toDouble() * cos(angle)).roundToInt().absoluteValue
+            listener(it, width, height)
+          }
           imageProxy.close()
         }
         .addOnFailureListener {
@@ -204,8 +222,29 @@ class FlutterNativeBarcodeScannerPlugin(): FlutterPlugin, MethodCallHandler, Act
       val barcodeAnalyzer = ImageAnalysis.Builder()
         .build()
         .also {
-          it.setAnalyzer(cameraExecutor, BarcodeAnalyzer { barcode ->
-            channel.invokeMethod("code", barcode.rawValue)
+          it.setAnalyzer(cameraExecutor, BarcodeAnalyzer { barcodes, imageWidth, imageHeight ->
+            if (scanFrame == null) {
+              channel.invokeMethod("code", barcodes[0].rawValue)
+              return@BarcodeAnalyzer
+            }
+
+            val halfWidth = imageWidth / 2
+            val halfHeight = imageHeight / 2
+            val halfWidthOffset = (halfWidth.toDouble() * scanFrame!![0]).roundToInt()
+            val halfHeightOffset = (halfHeight.toDouble() * scanFrame!![1]).roundToInt()
+            val frameBoundingBox = Rect(
+              halfWidth - halfWidthOffset,
+              halfHeight - halfHeightOffset,
+              halfWidth + halfWidthOffset,
+              halfHeight + halfHeightOffset
+            )
+
+            for (barcode in barcodes) {
+              if (frameBoundingBox.contains(barcode.boundingBox)) {
+                channel.invokeMethod("code", barcode.rawValue)
+                break
+              }
+            }
           })
         }
 

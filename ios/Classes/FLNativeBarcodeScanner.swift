@@ -52,12 +52,13 @@ public class FLNativeBarcodeScannerCamera:
   
   public func startScanning(
     formats: [AVMetadataObject.ObjectType],
+    scanFrame: [Double]?,
     completion: @escaping (Result<Bool, FLNativeBarcodeScannerError>) -> Void
   ) {
     // request access
     AVCaptureDevice.requestAccess(for: .video) { (granted) in
       if (granted) {
-        let configureSessionResult = self.configureSession(formats: formats)
+        let configureSessionResult = self.configureSession(formats: formats, scanFrame: scanFrame)
         switch configureSessionResult {
         case .failure(_):
           completion(configureSessionResult)
@@ -73,7 +74,10 @@ public class FLNativeBarcodeScannerCamera:
     }
   }
   
-  private func configureSession(formats: [AVMetadataObject.ObjectType]) -> Result<Bool, FLNativeBarcodeScannerError> {
+  private func configureSession(
+    formats: [AVMetadataObject.ObjectType],
+    scanFrame: [Double]?
+  ) -> Result<Bool, FLNativeBarcodeScannerError> {
     captureSession.beginConfiguration()
     captureSession.sessionPreset = quality
     
@@ -107,6 +111,15 @@ public class FLNativeBarcodeScannerCamera:
     // Define supported barcodes.
     metadataOutput.setMetadataObjectsDelegate(self, queue: queue)
     metadataOutput.metadataObjectTypes = formats
+    if let scanFrame = scanFrame {
+      // 0.75 to adjust the frame from 1.777 aspect ratio (1280x720) to 1.333 (640x480)
+      metadataOutput.rectOfInterest = CGRect(
+        x: 0.5 - (scanFrame[1] * 0.75) / 2.0,
+        y: 0.5 - scanFrame[0] / 2.0,
+        width: scanFrame[1] * 0.75,
+        height: scanFrame[0]
+      )
+    }
     
     captureSession.commitConfiguration()
     
@@ -212,19 +225,28 @@ public class FLNativeBarcodeScanner: NSObject, FlutterPlugin {
   
   public func initializeScanner(call: FlutterMethodCall, result: @escaping FlutterResult) -> Void {
     var formats: [AVMetadataObject.ObjectType] = [.qr, .ean8, .ean13, .code39, .code93, .code128, .pdf417, .itf14, .upce]
+    var scanFrame: [Double]?
     
-    // Check for "formats" argument and limit formats, if provided.
-    if let args = call.arguments as? [String: Any], let fmts = args["formats"] as? [String] {
-      formats = []
-      
-      for f in fmts {
-        if let formatObjectType = FLNativeBarcodeScannerFormats[f] {
-          formats.append(formatObjectType)
+    // Check for arguments
+    if let args = call.arguments as? [String: Any] {
+      // Check for "formats" argument.
+      if let fmts = args["formats"] as? [String] {
+        formats = []
+        
+        for f in fmts {
+          if let formatObjectType = FLNativeBarcodeScannerFormats[f] {
+            formats.append(formatObjectType)
+          }
         }
+      }
+      
+      // Check for "scanFrame" argument.
+      if let _scanFrame = args["scanFrame"] as? [Double], _scanFrame.count == 2 {
+        scanFrame = _scanFrame
       }
     }
     
-    self.cam.startScanning(formats: formats) { r in
+    self.cam.startScanning(formats: formats, scanFrame: scanFrame) { r in
       switch r {
       case .failure(let error):
         switch error {

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter/services.dart';
@@ -69,6 +70,7 @@ class FlutterNativeBarcodeScanner {
   ///
   /// May throw a `PlatformException`.
   static Future<FlutterNativeBarcodeScannerTexture?> start({
+    Size? scanFrame,
     List<FlutterNativeBarcodeFormat>? formats,
   }) async {
     // Create a new StreamController to receive codes from the platform.
@@ -87,6 +89,7 @@ class FlutterNativeBarcodeScanner {
 
     // Invoke the "start" platform method and return the result.
     final result = await _channel.invokeMapMethod<String, Object?>('start', {
+      if (scanFrame != null) 'scanFrame': [scanFrame.width, scanFrame.height],
       if (formats != null) 'formats': formats.map<String>((f) => _barcodeFormatStringMap[f] ?? '').toList(),
     });
     if (result == null) {
@@ -148,6 +151,8 @@ class FlutterNativeBarcodeScannerPreview extends StatelessWidget {
   /// Optional cropped aspect ratio. If set, the preview gets cropped to given aspect ratio.
   final double? aspectRatio;
 
+  final Size? scanFrame;
+
   /// Create a new [FlutterNativeBarcodeScannerPreview] instance.
   ///
   /// Requires a [FlutterNativeBarcodeScannerTexture] to render the preview to the screen.
@@ -157,17 +162,42 @@ class FlutterNativeBarcodeScannerPreview extends StatelessWidget {
     Key? key,
     required FlutterNativeBarcodeScannerTexture texture,
     this.aspectRatio,
+    this.scanFrame,
   })  : _texture = texture,
         super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    Widget child = Texture(textureId: _texture.id);
+
+    if (scanFrame != null) {
+      final _oldChild = child;
+      child = LayoutBuilder(
+        builder: (context, box) {
+          return Stack(
+            children: [
+              _oldChild,
+              Center(
+                child: Container(
+                  width: box.maxWidth * scanFrame!.width,
+                  // on iOS a different resolution is used (1280x720), so we reduce the height
+                  // to fit the resolution from android devices (640*480)
+                  height: box.maxHeight * scanFrame!.height * (Platform.isIOS ? 0.75 : 1.0),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: const Color(0xffffff00)),
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+      );
+    }
+
     if (aspectRatio == null) {
       return AspectRatio(
         aspectRatio: (_texture.height ?? 1) / (_texture.width ?? 1),
-        child: Texture(
-          textureId: _texture.id,
-        ),
+        child: child,
       );
     }
 
@@ -183,7 +213,7 @@ class FlutterNativeBarcodeScannerPreview extends StatelessWidget {
             child: SizedBox(
               width: size,
               height: size / ((_texture.height ?? 1) / (_texture.width ?? 1)),
-              child: Texture(textureId: _texture.id),
+              child: child,
             ),
           ),
         ),

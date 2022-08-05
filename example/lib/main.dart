@@ -17,6 +17,8 @@ class FlutterNativeBarcodeScannerExample extends StatefulWidget {
 }
 
 class _FlutterNativeBarcodeScannerExampleState extends State<FlutterNativeBarcodeScannerExample> {
+  final _aspectRatio = 480 / 640;
+  final _scanFrame = const Size(2 / 3, (2 / 3) * 0.75);
   final _texture = ValueNotifier<FlutterNativeBarcodeScannerTexture?>(null);
   final _code = ValueNotifier<Object?>(null);
 
@@ -53,6 +55,7 @@ class _FlutterNativeBarcodeScannerExampleState extends State<FlutterNativeBarcod
     try {
       // Start the barcode scan.
       final texture = await FlutterNativeBarcodeScanner.start(
+        scanFrame: _scanFrame,
         formats: [
           FlutterNativeBarcodeFormat.ean8,
           FlutterNativeBarcodeFormat.ean13,
@@ -126,7 +129,11 @@ class _FlutterNativeBarcodeScannerExampleState extends State<FlutterNativeBarcod
                     return const CircularProgressIndicator();
                   }
 
-                  return FlutterNativeBarcodeScannerPreview(texture: texture);
+                  return FlutterNativeBarcodeScannerPreview(
+                    texture: texture,
+                    aspectRatio: _aspectRatio,
+                    scanFrame: _scanFrame,
+                  );
                 },
               ),
             ),
