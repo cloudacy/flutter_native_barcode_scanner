@@ -240,7 +240,8 @@ class FlutterNativeBarcodeScannerPlugin(): FlutterPlugin, MethodCallHandler, Act
             )
 
             for (barcode in barcodes) {
-              if (frameBoundingBox.contains(barcode.boundingBox)) {
+              val bb = barcode.boundingBox ?: continue
+              if (frameBoundingBox.contains(bb)) {
                 channel.invokeMethod("code", barcode.rawValue)
                 break
               }
