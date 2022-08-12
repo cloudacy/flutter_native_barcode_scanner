@@ -5,7 +5,6 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.pm.PackageManager
 import android.graphics.Rect
-import android.util.Size
 import android.view.Surface
 import androidx.annotation.NonNull
 import androidx.camera.core.*
@@ -35,7 +34,7 @@ import kotlin.math.roundToInt
 import kotlin.math.sin
 
 /** FlutterNativeBarcodeScannerPlugin */
-class FlutterNativeBarcodeScannerPlugin(): FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry.RequestPermissionsResultListener {
+class FlutterNativeBarcodeScannerPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry.RequestPermissionsResultListener {
   private lateinit var channel : MethodChannel
   private var activity : Activity? = null
   private lateinit var textureRegistry: TextureRegistry
@@ -45,7 +44,7 @@ class FlutterNativeBarcodeScannerPlugin(): FlutterPlugin, MethodCallHandler, Act
   // It defines the type of permission request. It will be used at the callback to check, which type of request it was.
   private val cameraPermissionRequestCode = 0x4253
 
-  private var scanFrame: List<Double>? = null;
+  private var scanFrame: List<Double>? = null
 
   private var requestCameraPermissionResult: Result? = null
 
