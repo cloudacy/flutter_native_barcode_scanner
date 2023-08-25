@@ -4,22 +4,22 @@ updates:
   - package-ecosystem: pub
     directory: /
     schedule:
-      timezone: daily
+      interval: daily
 
   # gradle updates (plugin)
   - package-ecosystem: gradle
     directory: android
     schedule:
-      timezone: daily
+      interval: daily
 
   # pub updates (example app)
   - package-ecosystem: pub
     directory: example
     schedule:
-      timezone: daily
+      interval: daily
 
   # gradle updates (example app)
   - package-ecosystem: gradle
     directory: example/android
     schedule:
-      timezone: daily
+      interval: daily
