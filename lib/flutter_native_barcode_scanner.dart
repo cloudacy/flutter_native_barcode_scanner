@@ -171,12 +171,12 @@ class FlutterNativeBarcodeScannerPreview extends StatelessWidget {
     Widget child = Texture(textureId: _texture.id);
 
     if (scanFrame != null) {
-      final _oldChild = child;
+      final oldChild = child;
       child = LayoutBuilder(
         builder: (context, box) {
           return Stack(
             children: [
-              _oldChild,
+              oldChild,
               Center(
                 child: Container(
                   width: box.maxWidth * scanFrame!.width,
