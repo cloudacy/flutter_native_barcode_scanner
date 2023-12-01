@@ -1,3 +1,11 @@
+## 0.5.0
+
+- chore: update dart and flutter version constraints ([dc0c74c](https://github.com/cloudacy/flutter_native_barcode_scanner/commit/dc0c74c599d35f491a7234e7968d470fe4cb9765))
+
+## 0.5.1
+
+- feat: support `dataMatrix` barcodes on iOS devices ([704dc35](https://github.com/cloudacy/flutter_native_barcode_scanner/commit/704dc351dc1170d416f4fe099995fb39cd84702d))
+
 ## 0.4.0
 
 - refactor!: remove iOS orientation handling ([9205a41](https://github.com/cloudacy/flutter_native_barcode_scanner/commit/9205a4146b08aa651ddfebce91a60a1d8316d2a8))
