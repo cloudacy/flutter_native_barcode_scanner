@@ -159,12 +159,11 @@ class FlutterNativeBarcodeScannerPreview extends StatelessWidget {
   ///
   /// Provide an optional `aspectRatio` to define a custom cropped preview aspect ratio.
   const FlutterNativeBarcodeScannerPreview({
-    Key? key,
+    super.key,
     required FlutterNativeBarcodeScannerTexture texture,
     this.aspectRatio,
     this.scanFrame,
-  })  : _texture = texture,
-        super(key: key);
+  }) : _texture = texture;
 
   @override
   Widget build(BuildContext context) {

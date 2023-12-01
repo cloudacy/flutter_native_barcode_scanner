@@ -9,8 +9,8 @@ void main() {
 
 class FlutterNativeBarcodeScannerExample extends StatefulWidget {
   const FlutterNativeBarcodeScannerExample({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   State<FlutterNativeBarcodeScannerExample> createState() => _FlutterNativeBarcodeScannerExampleState();
