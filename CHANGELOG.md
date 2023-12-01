@@ -6,6 +6,10 @@
 
 - feat: support `dataMatrix` barcodes on iOS devices ([704dc35](https://github.com/cloudacy/flutter_native_barcode_scanner/commit/704dc351dc1170d416f4fe099995fb39cd84702d))
 
+### 0.5.2
+
+- task: add `dataMatrix` to default barcode formats ([4d7e446](https://github.com/cloudacy/flutter_native_barcode_scanner/commit/4d7e4466201e72ac56f67fd2fc482ff97f981c32))
+
 ## 0.4.0
 
 - refactor!: remove iOS orientation handling ([9205a41](https://github.com/cloudacy/flutter_native_barcode_scanner/commit/9205a4146b08aa651ddfebce91a60a1d8316d2a8))
