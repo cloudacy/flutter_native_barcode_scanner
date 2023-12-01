@@ -225,7 +225,7 @@ public class FLNativeBarcodeScanner: NSObject, FlutterPlugin {
   }
   
   public func initializeScanner(call: FlutterMethodCall, result: @escaping FlutterResult) -> Void {
-    var formats: [AVMetadataObject.ObjectType] = [.qr, .ean8, .ean13, .code39, .code93, .code128, .pdf417, .itf14, .upce]
+    var formats: [AVMetadataObject.ObjectType] = [.qr, .ean8, .ean13, .code39, .code93, .code128, .dataMatrix, .pdf417, .itf14, .upce]
     var scanFrame: [Double]?
     
     // Check for arguments
