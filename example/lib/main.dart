@@ -22,6 +22,12 @@ class _FlutterNativeBarcodeScannerExampleState extends State<FlutterNativeBarcod
   final _texture = ValueNotifier<FlutterNativeBarcodeScannerTexture?>(null);
   final _code = ValueNotifier<Object?>(null);
 
+  final _barcodeFormatFilter = [
+    FlutterNativeBarcodeFormat.ean8,
+    FlutterNativeBarcodeFormat.ean13,
+    FlutterNativeBarcodeFormat.dataMatrix,
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -56,10 +62,7 @@ class _FlutterNativeBarcodeScannerExampleState extends State<FlutterNativeBarcod
       // Start the barcode scan.
       final texture = await FlutterNativeBarcodeScanner.start(
         scanFrame: _scanFrame,
-        formats: [
-          FlutterNativeBarcodeFormat.ean8,
-          FlutterNativeBarcodeFormat.ean13,
-        ],
+        formats: _barcodeFormatFilter,
       );
       if (texture == null) {
         _showErrorDialog(content: const Text('Unable to start the barcode scan.'));
@@ -136,6 +139,10 @@ class _FlutterNativeBarcodeScannerExampleState extends State<FlutterNativeBarcod
                   );
                 },
               ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8),
+              child: Text('Format filter: ${_barcodeFormatFilter.map((f) => f.name).toList()}'),
             ),
             Padding(
               padding: const EdgeInsets.all(8),

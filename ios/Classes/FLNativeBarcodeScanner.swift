@@ -13,6 +13,7 @@ let FLNativeBarcodeScannerFormats : [String: AVMetadataObject.ObjectType] = [
   "code39": .code39,
   "code93": .code93,
   "code128": .code128,
+  "dataMatrix": .dataMatrix,
   "ean8": .ean8,
   "ean13": .ean13,
   "itf": .itf14,

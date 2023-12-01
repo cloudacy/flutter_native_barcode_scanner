@@ -13,6 +13,7 @@ enum FlutterNativeBarcodeFormat {
   code39,
   code93,
   code128,
+  dataMatrix,
   ean8,
   ean13,
   itf,
@@ -26,6 +27,7 @@ const _barcodeFormatStringMap = {
   FlutterNativeBarcodeFormat.code39: 'code39',
   FlutterNativeBarcodeFormat.code93: 'code93',
   FlutterNativeBarcodeFormat.code128: 'code128',
+  FlutterNativeBarcodeFormat.dataMatrix: 'dataMatrix',
   FlutterNativeBarcodeFormat.ean8: 'ean8',
   FlutterNativeBarcodeFormat.ean13: 'ean13',
   FlutterNativeBarcodeFormat.itf: 'itf',
@@ -67,6 +69,11 @@ class FlutterNativeBarcodeScanner {
   static StreamController<Object?>? _controller;
 
   /// Creates a new code stream and tries to start the barcode scan.
+  ///
+  /// - `formats`:
+  ///   - Apply no format list to scan for all supported barcode formats.
+  ///     See [FlutterNativeBarcodeFormat] for supported barcode formats.
+  ///   - Apply a format list to only trigger on given barcode formats.
   ///
   /// May throw a `PlatformException`.
   static Future<FlutterNativeBarcodeScannerTexture?> start({
