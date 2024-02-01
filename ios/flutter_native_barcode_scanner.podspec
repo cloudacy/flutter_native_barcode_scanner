@@ -4,18 +4,18 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'flutter_native_barcode_scanner'
-  s.version          = '0.5.2'
+  s.version          = '0.6.0'
   s.summary          = 'A barcode scanner for Flutter, using platform native APIs.'
   s.description      = <<-DESC
 A barcode scanner for Flutter, using platform native APIs.
                        DESC
-  s.homepage         = 'https://cloudacy.com'
+  s.homepage         = 'https://github.com/cloudacy/flutter_native_barcode_scanner'
   s.license          = { :file => '../LICENSE' }
   s.author           = { 'cloudacy OG' => 'office@cloudacy.com' }
   s.source           = { :path => '.' }
   s.source_files = 'Classes/**/*'
   s.dependency 'Flutter'
-  s.platform = :ios, '10.0'
+  s.platform = :ios, '12.0'
 
   # Flutter.framework does not contain a i386 slice.
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386' }

@@ -97,7 +97,7 @@ https://firebase.google.com/docs/ml-kit/android/read-barcodes
 
 ### iOS
 
-**This plugin supports iOS 10.0 or higher.**
+**This plugin supports iOS 12.0 or higher.**
 
 Make sure that the `NSCameraUsageDescription` (or `Privacy - Camera Usage Description`) string is set at `ios/Runner/info.plist` to scan codes.
 

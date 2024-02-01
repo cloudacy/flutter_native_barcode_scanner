@@ -2,13 +2,13 @@ import Flutter
 import UIKit
 import AVFoundation
 
-public enum FLNativeBarcodeScannerError : Error {
+public enum FlutterNativeBarcodeScannerError : Error {
   case access
   case noVideoDevice
   case noVideoDeviceInput
 }
 
-let FLNativeBarcodeScannerFormats : [String: AVMetadataObject.ObjectType] = [
+let FlutterNativeBarcodeScannerFormats : [String: AVMetadataObject.ObjectType] = [
   "aztec": .aztec,
   "code39": .code39,
   "code93": .code93,
@@ -54,7 +54,7 @@ public class FLNativeBarcodeScannerCamera:
   public func startScanning(
     formats: [AVMetadataObject.ObjectType],
     scanFrame: [Double]?,
-    completion: @escaping (Result<Bool, FLNativeBarcodeScannerError>) -> Void
+    completion: @escaping (Result<Bool, FlutterNativeBarcodeScannerError>) -> Void
   ) {
     // request access
     AVCaptureDevice.requestAccess(for: .video) { (granted) in
@@ -78,7 +78,7 @@ public class FLNativeBarcodeScannerCamera:
   private func configureSession(
     formats: [AVMetadataObject.ObjectType],
     scanFrame: [Double]?
-  ) -> Result<Bool, FLNativeBarcodeScannerError> {
+  ) -> Result<Bool, FlutterNativeBarcodeScannerError> {
     captureSession.beginConfiguration()
     captureSession.sessionPreset = quality
     
@@ -169,7 +169,7 @@ public class FLNativeBarcodeScannerCamera:
   }
 }
 
-public class FLNativeBarcodeScanner: NSObject, FlutterPlugin {
+public class FlutterNativeBarcodeScannerPlugin: NSObject, FlutterPlugin {
   private let registry: FlutterTextureRegistry
   private let messenger: FlutterBinaryMessenger
   private let methodChannel: FlutterMethodChannel
@@ -187,9 +187,9 @@ public class FLNativeBarcodeScanner: NSObject, FlutterPlugin {
     self.cam = FLNativeBarcodeScannerCamera(methodChannel: methodChannel)
   }
   
-  public class func register(with registrar: FlutterPluginRegistrar) {
+  public static func register(with registrar: FlutterPluginRegistrar) {
     let channel = FlutterMethodChannel(name: "flutter_native_barcode_scanner", binaryMessenger: registrar.messenger())
-    let instance = FLNativeBarcodeScanner(registry: registrar.textures(), messenger: registrar.messenger(), methodChannel: channel)
+    let instance = FlutterNativeBarcodeScannerPlugin(registry: registrar.textures(), messenger: registrar.messenger(), methodChannel: channel)
     
     registrar.addMethodCallDelegate(instance, channel: channel)
   }
@@ -205,7 +205,7 @@ public class FLNativeBarcodeScanner: NSObject, FlutterPlugin {
       result(true)
       break
     default:
-      result(FlutterError(code: "InvalidMethod", message: "Invalid method \(call.method)!", details: nil))
+      result(FlutterMethodNotImplemented)
       break
     }
   }
@@ -235,7 +235,7 @@ public class FLNativeBarcodeScanner: NSObject, FlutterPlugin {
         formats = []
         
         for f in fmts {
-          if let formatObjectType = FLNativeBarcodeScannerFormats[f] {
+          if let formatObjectType = FlutterNativeBarcodeScannerFormats[f] {
             formats.append(formatObjectType)
           }
         }

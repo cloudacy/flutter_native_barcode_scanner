@@ -7,7 +7,11 @@ import android.content.pm.PackageManager
 import android.graphics.Rect
 import android.view.Surface
 import androidx.annotation.NonNull
-import androidx.camera.core.*
+import androidx.camera.core.AspectRatio
+import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageAnalysis
+import androidx.camera.core.ImageProxy
+import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -34,10 +38,14 @@ import kotlin.math.roundToInt
 import kotlin.math.sin
 
 /** FlutterNativeBarcodeScannerPlugin */
-class FlutterNativeBarcodeScannerPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry.RequestPermissionsResultListener {
+class FlutterNativeBarcodeScannerPlugin: FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry.RequestPermissionsResultListener {
+  /// The MethodChannel that will the communication between Flutter and native Android
+  ///
+  /// This local reference serves to register the plugin with the Flutter Engine and unregister it
+  /// when the Flutter Engine is detached from the Activity
   private lateinit var channel : MethodChannel
   private var activity : Activity? = null
-  private lateinit var textureRegistry: TextureRegistry
+  private lateinit var textureRegistry : TextureRegistry
 
   // Needs to be an app-defined int constant. This value is the hex representation of "BS".
   // It only uses 16 bits to meet requirements (android.support.v4.app.FragmentActivity).
@@ -51,14 +59,14 @@ class FlutterNativeBarcodeScannerPlugin : FlutterPlugin, MethodCallHandler, Acti
   private var cameraProvider: ProcessCameraProvider? = null
   private var cameraExecutor: ExecutorService? = null
 
-  override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
+  override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
     channel = MethodChannel(flutterPluginBinding.binaryMessenger, "flutter_native_barcode_scanner")
     channel.setMethodCallHandler(this)
 
     textureRegistry = flutterPluginBinding.textureRegistry
   }
 
-  override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
+  override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
     channel.setMethodCallHandler(null)
   }
 
@@ -102,7 +110,7 @@ class FlutterNativeBarcodeScannerPlugin : FlutterPlugin, MethodCallHandler, Acti
     return false
   }
 
-  override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
+  override fun onMethodCall(call: MethodCall, result: Result) {
     when (call.method) {
       "start" -> {
         if (call.hasArgument("scanFrame")) {

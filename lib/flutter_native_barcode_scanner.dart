@@ -2,7 +2,8 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/widgets.dart';
-import 'package:flutter/services.dart';
+
+import 'flutter_native_barcode_scanner_platform_interface.dart';
 
 /// Enum of available barcode formats, supported on iOS and Android.
 ///
@@ -64,8 +65,6 @@ class FlutterNativeBarcodeScannerTexture {
 ///
 /// It also allows to receive barcodes, by calling `getCode()`.
 class FlutterNativeBarcodeScanner {
-  static const MethodChannel _channel = MethodChannel('flutter_native_barcode_scanner');
-
   static StreamController<Object?>? _controller;
 
   /// Creates a new code stream and tries to start the barcode scan.
@@ -88,14 +87,15 @@ class FlutterNativeBarcodeScanner {
     _controller = controller;
 
     // Add a method call handler to add received codes to the StreamController.
-    _channel.setMethodCallHandler((call) async {
+    FlutterNativeBarcodeScannerPlatform.instance.addBarcodeCallback((call) async {
       if (call.method == 'code') {
         controller.add(call.arguments);
       }
+      return null;
     });
 
     // Invoke the "start" platform method and return the result.
-    final result = await _channel.invokeMapMethod<String, Object?>('start', {
+    final result = await FlutterNativeBarcodeScannerPlatform.instance.start({
       if (scanFrame != null) 'scanFrame': [scanFrame.width, scanFrame.height],
       if (formats != null) 'formats': formats.map<String>((f) => _barcodeFormatStringMap[f] ?? '').toList(),
     });
@@ -129,7 +129,7 @@ class FlutterNativeBarcodeScanner {
     _controller = null;
 
     // Invoke the "stop" platform method.
-    return (await _channel.invokeMethod<bool>('stop')) ?? false;
+    return (await FlutterNativeBarcodeScannerPlatform.instance.stop()) ?? false;
   }
 
   /// Wait for a barcode to be returned by the platform.
