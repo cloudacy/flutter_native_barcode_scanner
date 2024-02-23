@@ -29,7 +29,7 @@ android {
         namespace 'io.cloudacy.flutter_native_barcode_scanner'
     }
 
-    compileSdkVersion 33
+    compileSdk 34
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
