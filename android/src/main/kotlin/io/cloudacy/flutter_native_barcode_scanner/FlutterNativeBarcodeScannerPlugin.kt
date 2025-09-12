@@ -6,7 +6,6 @@ import android.app.Activity
 import android.content.pm.PackageManager
 import android.graphics.Rect
 import android.view.Surface
-import androidx.annotation.NonNull
 import androidx.camera.core.AspectRatio
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis

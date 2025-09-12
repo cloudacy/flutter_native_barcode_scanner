@@ -4,20 +4,17 @@ version: 0.6.0
 homepage: https://github.com/cloudacy/flutter_native_barcode_scanner
 
 environment:
-  sdk: '>=3.2.6 <4.0.0'
-  flutter: '>=3.3.0'
+  sdk: '>=3.9.0 <4.0.0'
+  flutter: '>=3.35.0'
 
 dependencies:
   flutter:
     sdk: flutter
-  plugin_platform_interface: ^2.0.2
+
+  plugin_platform_interface: ^2.1.8
 
 dev_dependencies:
-  flutter_test:
-    sdk: flutter
-
-  # https://pub.dev/packages/flutter_lints
-  flutter_lints: '>=2.0.0'
+  flutter_lints: ^6.0.0
 
 flutter:
   plugin:
