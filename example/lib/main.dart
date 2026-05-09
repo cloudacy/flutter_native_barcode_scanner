@@ -66,9 +66,6 @@ class _FlutterNativeBarcodeScannerExampleState extends State<FlutterNativeBarcod
       );
       if (texture == null) {
         _showErrorDialog(content: const Text('Unable to start the barcode scan.'));
-
-        // Stop the barcode scan process.
-        await FlutterNativeBarcodeScanner.stop();
         return;
       }
 
@@ -79,9 +76,6 @@ class _FlutterNativeBarcodeScannerExampleState extends State<FlutterNativeBarcod
       final code = await FlutterNativeBarcodeScanner.getBarcode();
       if (code == null) {
         _showErrorDialog(content: const Text('Unable to get a barcode.'));
-
-        // Stop the barcode scan process.
-        await FlutterNativeBarcodeScanner.stop();
         return;
       }
 

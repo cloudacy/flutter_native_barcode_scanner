@@ -29,8 +29,6 @@ class _FlutterNativeBarcodeScannerExampleState extends State<FlutterNativeBarcod
       if (texture == null) {
         // Handle error...
 
-        // Stop the barcode scan process.
-        await FlutterNativeBarcodeScanner.stop();
         return;
       }
 
@@ -42,8 +40,6 @@ class _FlutterNativeBarcodeScannerExampleState extends State<FlutterNativeBarcod
       if (code == null) {
         // Handle error...
 
-        // Stop the barcode scan process.
-        await FlutterNativeBarcodeScanner.stop();
         return;
       }
 
