@@ -1,3 +1,16 @@
+## 0.6.0
+
+- task(Android)!: update dependencies
+  - use camerax 1.5.0
+  - use barcode-scanning 17.3.0
+  - AGP 8.12
+  - min SDK: 24
+- task(iOS)!: add SwiftPM support
+  - iOS >= 13.0
+- task!: update dependencies
+  - dart >= 3.11
+  - Flutter >= 3.41
+
 ## 0.5.0
 
 - chore: update dart and flutter version constraints ([dc0c74c](https://github.com/cloudacy/flutter_native_barcode_scanner/commit/dc0c74c599d35f491a7234e7968d470fe4cb9765))
