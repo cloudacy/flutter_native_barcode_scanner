@@ -13,7 +13,7 @@ A barcode scanner for Flutter, using platform native APIs.
   s.license          = { :file => '../LICENSE' }
   s.author           = { 'cloudacy OG' => 'office@cloudacy.com' }
   s.source           = { :path => '.' }
-  s.source_files = 'Classes/**/*'
+  s.source_files     = 'flutter_native_barcode_scanner/Sources/flutter_native_barcode_scanner/**/*.swift'
   s.dependency 'Flutter'
   s.platform = :ios, '13.0'
 

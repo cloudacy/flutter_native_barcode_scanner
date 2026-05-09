@@ -51,16 +51,12 @@ print('Updated pubspec.yaml and ios/flutter_native_barcode_scanner.podspec! Runn
 # update lockfiles
 subprocess.run(['flutter', 'pub', 'get'])
 
-# update example iOS Podfile.lock
-subprocess.run(['pod', 'install'], cwd = 'example/ios')
-
-print('Staging pubspec.yaml, pubspec.lock, ios/flutter_native_barcode_scanner.podspec, example/pubspec.lock, example/ios/Podfile.lock and CHANGELOG.md ...')
+print('Staging pubspec.yaml, pubspec.lock, ios/flutter_native_barcode_scanner.podspec, example/pubspec.lock and CHANGELOG.md ...')
 
 subprocess.run(['git', 'add', 'pubspec.yaml'])
 subprocess.run(['git', 'add', 'pubspec.lock'])
 subprocess.run(['git', 'add', 'ios/flutter_native_barcode_scanner.podspec'])
 subprocess.run(['git', 'add', 'example/pubspec.lock'])
-subprocess.run(['git', 'add', 'example/ios/Podfile.lock'])
 subprocess.run(['git', 'add', 'CHANGELOG.md'])
 
 print('Creating version commit and tag ...')
