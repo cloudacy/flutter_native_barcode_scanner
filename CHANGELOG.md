@@ -8,6 +8,7 @@
   - Gradle 9.3.1
   - Java 17
 - fix(android): catch exceptions while initializing the BarcodeAnalyzer
+- fix(android): prevent R8 from removing required no-arg constructors since AGP 9
 
 ## 0.6.0
 
