@@ -1,6 +1,16 @@
+## 0.7.0
+
+- task(android)!: update android dependencies
+  - migrate Gradle files to Kotlin DSL
+  - camerax 1.6.1
+  - AGP 9.1
+  - Kotlin 2.4
+  - Gradle 9.3.1
+  - Java 17
+
 ## 0.6.0
 
-- task(Android)!: update dependencies
+- task(android)!: update dependencies
   - use camerax 1.5.0
   - use barcode-scanning 17.3.0
   - AGP 8.12
