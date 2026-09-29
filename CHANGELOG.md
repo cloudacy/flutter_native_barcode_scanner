@@ -7,6 +7,7 @@
   - Kotlin 2.4
   - Gradle 9.3.1
   - Java 17
+- fix(android): catch exceptions while initializing the BarcodeAnalyzer
 
 ## 0.6.0
 

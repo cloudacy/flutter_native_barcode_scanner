@@ -225,35 +225,40 @@ class FlutterNativeBarcodeScannerPlugin: FlutterPlugin, MethodCallHandler, Activ
         }
 
       // Barcode analyzer
-      val barcodeAnalyzer = ImageAnalysis.Builder()
-        .build()
-        .also {
-          it.setAnalyzer(cameraExecutor, BarcodeAnalyzer { barcodes, imageWidth, imageHeight ->
-            if (scanFrame == null) {
-              channel.invokeMethod("code", barcodes[0].rawValue)
-              return@BarcodeAnalyzer
-            }
+      val barcodeAnalyzer = try {
+        BarcodeAnalyzer { barcodes, imageWidth, imageHeight ->
+          if (scanFrame == null) {
+            channel.invokeMethod("code", barcodes[0].rawValue)
+            return@BarcodeAnalyzer
+          }
 
-            val halfWidth = imageWidth / 2
-            val halfHeight = imageHeight / 2
-            val halfWidthOffset = (halfWidth.toDouble() * scanFrame!![0]).roundToInt()
-            val halfHeightOffset = (halfHeight.toDouble() * scanFrame!![1]).roundToInt()
-            val frameBoundingBox = Rect(
-              halfWidth - halfWidthOffset,
-              halfHeight - halfHeightOffset,
-              halfWidth + halfWidthOffset,
-              halfHeight + halfHeightOffset
-            )
+          val halfWidth = imageWidth / 2
+          val halfHeight = imageHeight / 2
+          val halfWidthOffset = (halfWidth.toDouble() * scanFrame!![0]).roundToInt()
+          val halfHeightOffset = (halfHeight.toDouble() * scanFrame!![1]).roundToInt()
+          val frameBoundingBox = Rect(
+            halfWidth - halfWidthOffset,
+            halfHeight - halfHeightOffset,
+            halfWidth + halfWidthOffset,
+            halfHeight + halfHeightOffset
+          )
 
-            for (barcode in barcodes) {
-              val bb = barcode.boundingBox ?: continue
-              if (frameBoundingBox.contains(bb)) {
-                channel.invokeMethod("code", barcode.rawValue)
-                break
-              }
+          for (barcode in barcodes) {
+            val bb = barcode.boundingBox ?: continue
+            if (frameBoundingBox.contains(bb)) {
+              channel.invokeMethod("code", barcode.rawValue)
+              break
             }
-          })
+          }
         }
+      } catch (e: Exception) {
+        result.error("BARCODE_ANALYZER_INIT_FAILED", "Unable to start the BarcodeAnalyzer", e.toString())
+        return@Runnable
+      }
+
+      val imageAnalysis = ImageAnalysis.Builder()
+        .build()
+        .also { it.setAnalyzer(cameraExecutor, barcodeAnalyzer) }
 
       // Select back camera as a default
       val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
@@ -263,7 +268,7 @@ class FlutterNativeBarcodeScannerPlugin: FlutterPlugin, MethodCallHandler, Activ
         cameraProvider.unbindAll()
 
         // Bind use cases to camera
-        cameraProvider.bindToLifecycle(activity as LifecycleOwner, cameraSelector, preview, barcodeAnalyzer)
+        cameraProvider.bindToLifecycle(activity as LifecycleOwner, cameraSelector, preview, imageAnalysis)
       } catch(e: Exception) {
         result.error("USE_CASE_BIND_FAILED", "Unable to bind use cases to the camera", e)
         return@Runnable
